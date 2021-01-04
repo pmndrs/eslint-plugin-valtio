@@ -1,0 +1,20 @@
+{
+  "name": "eslint-plugin-valtio",
+  "version": "0.0.0",
+  "description": "An eslint plugin for better valtio experience",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin"
+  ],
+  "author": "Aslemammad",
+  "main": "lib/index.js",
+  "scripts": {},
+  "devDependencies": {
+    "eslint": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "license": "ISC"
+}
