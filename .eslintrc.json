@@ -1,0 +1,53 @@
+{
+    "env": {
+      "browser": true,
+      "shared-node-browser": true,
+      "node": true,
+      "es6": true
+    },
+    "extends": [
+      "prettier",
+      "plugin:prettier/recommended",
+      "plugin:react-hooks/recommended",
+      "plugin:import/errors",
+      "plugin:import/warnings"
+    ],
+    "plugins": ["react", "prettier", "react-hooks", "import", "jest"],
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "rules": {
+        "curly": ["warn", "multi-line", "consistent"],
+        "no-console": "off",
+        "no-empty-pattern": "warn",
+        "no-duplicate-imports": "error",
+        "import/no-unresolved": ["error", { "commonjs": true, "amd": true }],
+        "import/export": "error",
+        "import/named": "off",
+        "import/namespace": "off",
+        "import/default": "off",
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+     }
+    },
+    "settings": {
+     
+      "import/extensions": [".js", ".jsx", ".ts", ".tsx"],
+      "import/parsers": {
+        "@typescript-eslint/parser": [".js", ".jsx", ".ts", ".tsx"]
+      },
+      "import/resolver": {
+        "node": {
+          "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"],
+          "paths": ["src"]
+        },
+        "alias": {
+          "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"],
+          "map": [["valtio", "./src/index.ts"]]
+        }
+      }
+    }
+ }
+  
