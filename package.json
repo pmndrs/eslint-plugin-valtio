@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-valtio",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "An eslint plugin for better valtio experience",
   "homepage": "https://github.com/pmndrs/eslint-plugin-valtio",
   "keywords": [
@@ -21,9 +21,6 @@
     "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-prettier": "^3.3.0" 
   },
-  "engines": {
-    "node": ">=0.10.0"
-  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -42,5 +39,5 @@
       "prettier --write"
     ]
   },
-  "license": "ISC"
+  "license": "MIT"
 }
