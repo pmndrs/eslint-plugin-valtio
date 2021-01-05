@@ -1,23 +1,8 @@
 const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 const callExpressions = ['JSXExpressionContainer', 'CallExpression']
-
-function patternVars(node) {
-  const vars = []
-
-  if (node.type === 'Identifier') {
-    vars.push(node.name)
-  } else if (node.type === 'ObjectPattern') {
-    node.properties.forEach((property) =>
-      vars.push(...patternVars(property.value))
-    )
-  } else if (node.type === 'AssignmentPattern') {
-    vars.push(...patternVars(node.left))
-  } else if (node.type === 'ArrayPattern') {
-    node.elements.forEach((element) => vars.push(...patternVars(element)))
-  }
-
-  return vars
-}
+export const PROXY_RENDER_PHASE_MESSAGE =
+  'Using proxies in the render phase would cause unexpected problems.'
+export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state'
 
 function which(name, scope) {
   let kind = null
@@ -69,11 +54,6 @@ function isInRender(node) {
     return isInRender(node.parent)
   }
 }
-
-function last(array) {
-  return array[array.length - 1]
-}
-
 export default {
   meta: {
     type: 'problem',
@@ -103,29 +83,14 @@ export default {
         if (kind === 'state' && isInRender(node)) {
           return context.report({
             node,
-            message:
-              'Using proxies in the render phase would cause unexpected problems.',
+            message: PROXY_RENDER_PHASE_MESSAGE,
           })
         }
         if (kind === 'snapshot' && isInCallback(node)) {
           return context.report({
             node,
-            message: 'better to just use proxy state',
+            message: SNAPSHOT_CALLBACK_MESSAGE,
           })
-        }
-      },
-      VariableDeclarator(node) {
-        const lastSegment = last(codePathSegmentStack)
-        const scope = context.getScope(node)
-
-        const initKind = which(node.init.name, scope)
-        const nodeKind = which(node.id.name, scope)
-
-        if (initKind === 'state' || nodeKind === 'state') {
-          return lastSegment.states.push(...patternVars(node.id))
-        }
-        if (initKind === 'snapshot' || nodeKind === 'snapshot') {
-          lastSegment.snapshots.push(...patternVars(node.id))
         }
       },
     }
