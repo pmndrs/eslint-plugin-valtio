@@ -1,27 +1,31 @@
 # eslint-plugin-valtio
 
-nothing
-
+[Valtio](https://github.com/pmndrs/valtio) linting plugin for better development. 
 ## Installation
 
-You'll first need to install [ESLint](http://eslint.org):
-
 ```
-$ npm i eslint --save-dev
+npm install eslint-plugin-valtio --save-dev
 ```
-
-Next, install `eslint-plugin-valtio`:
-
+for yarn users:
 ```
-$ npm install eslint-plugin-valtio --save-dev
+yarn add -D eslint-plugin-valtio 
 ```
 
 ## Usage
 
-Add `valtio` to the plugins section of your `.eslintrc` configuration file. You can omit the `eslint-plugin-` prefix:
+Add `valtio` to the plugins section of your `.eslintrc` configuration file. 
 
 ```json
 {
   "plugins": ["valtio"]
 }
 ```
+You can enable the rule to activate the plugin.
+```json
+{
+  ...
+  "rules": {
+    "valtio/state-snapshot-rule": "warn"
+  } 
+}
+  ```
