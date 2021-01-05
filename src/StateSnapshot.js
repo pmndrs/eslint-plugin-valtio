@@ -1,5 +1,3 @@
-'use strict'
-
 const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 

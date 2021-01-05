@@ -1,5 +1,3 @@
-'use strict'
-
 import StateSnapshot from './StateSnapshot'
 
 export const rules = {
