@@ -23,7 +23,6 @@ Add `valtio` to the plugins section of your `.eslintrc` configuration file.
 You can enable the rule to activate the plugin.
 ```json
 {
-  ...
   "rules": {
     "valtio/state-snapshot-rule": "warn"
   } 
