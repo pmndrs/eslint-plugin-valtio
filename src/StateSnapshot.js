@@ -64,14 +64,7 @@ export default {
     },
   },
   create(context) {
-    const codePathSegmentStack = []
     return {
-      onCodePathSegmentStart: (segment) => {
-        segment.snapshots = []
-        segment.states = []
-        codePathSegmentStack.push(segment)
-      },
-
       Identifier(node) {
         const scope = context.getScope(node)
         if (
