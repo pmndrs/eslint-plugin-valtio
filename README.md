@@ -16,11 +16,13 @@ yarn add -D eslint-plugin-valtio
 
 ## Usage
 
-Add `valtio` to the plugins section of your `.eslintrc` configuration file. 
+Add `valtio` to the `extends` section of your `.eslintrc` configuration file. 
 
 ```json
 {
-  "plugins": ["valtio"]
+  "extends": [
+      "plugin:valtio/recommended"
+    ]
 }
 ```
 
