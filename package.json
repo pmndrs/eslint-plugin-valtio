@@ -43,6 +43,10 @@
     "eslintplugin",
     "eslint-plugin"
   ],
+  "author": "M. Bagher Abiat",
+  "contributors": [
+    "Daishi Kato"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/pmndrs/eslint-plugin-valtio/issues"
