@@ -2,6 +2,7 @@ import { RuleTester } from 'eslint'
 import rule, {
   PROXY_RENDER_PHASE_MESSAGE,
   SNAPSHOT_CALLBACK_MESSAGE,
+  UNEXPECTED_STATE_MUTATING,
 } from '../src/StateSnapshot'
 
 const ruleTester = new RuleTester({
@@ -108,6 +109,44 @@ ruleTester.run('state-snapshot-rule', rule, {
   }
   `,
       errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      function Counter() {
+        const snap = useProxy(state.r.b)
+        const snap1 = useProxy(state)
+        const handleClick = () => {
+          state.r.b = ['hello', 'ss']
+          state = ['hello']
+        }
+       return <div></div> 
+      }
+      `,
+      errors: [UNEXPECTED_STATE_MUTATING, UNEXPECTED_STATE_MUTATING],
+    },
+    {
+      code: `
+      function Counter() {
+        const snap = useProxy(state)
+        const handleClick = () => {
+          state = ['hello']
+        }
+       return <div></div> 
+      }
+      `,
+      errors: [UNEXPECTED_STATE_MUTATING],
+    },
+    {
+      code: `
+      function Counter() {
+        const snap = useProxy(state.a)
+        const handleClick = () => {
+          state.a = ['hello']
+        }
+       return <div></div> 
+      }
+      `,
+      errors: [UNEXPECTED_STATE_MUTATING],
     },
   ],
 })
