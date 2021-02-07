@@ -148,5 +148,14 @@ ruleTester.run('state-snapshot-rule', rule, {
       `,
       errors: [UNEXPECTED_STATE_MUTATING],
     },
+    {
+      code: `
+      function Counter() {
+        const snap = useProxy(state[0])
+        return <div>{snap}<button onClick={() => ++state[0]}>inc</button></div>
+      }
+      `,
+      errors: [UNEXPECTED_STATE_MUTATING],
+    },
   ],
 })
