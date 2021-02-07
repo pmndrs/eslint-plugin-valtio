@@ -3,6 +3,66 @@ const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const PROXY_RENDER_PHASE_MESSAGE =
   'Using proxies in the render phase would cause unexpected problems.'
 export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state'
+export const UNEXPECTED_STATE_MUTATING =
+  'Unexpected state mutating( I think we have to change that'
+
+function isSameMemmberExpression(first, second) {
+  if (first.property.name === second.property.name) {
+    if (
+      first.object._babelType === 'MemberExpression' &&
+      second.object._babelType === 'MemberExpression'
+    ) {
+      return isSameMemmberExpression(first.object, second.object)
+    } else if (
+      first.object.type === 'Identifier' &&
+      second.object.type === 'Identifier'
+    ) {
+      return first.object.type === second.object.type
+    }
+  } else {
+    return false
+  }
+  return false
+}
+function isUsedInUseProxy(node, scope) {
+  let isUsed = false
+
+  if (!scope) return isUsed
+
+  scope.variables.forEach((variable) => {
+    const def = variable.defs[0]
+    if (!def || isUsed) return
+
+    const init = def.node.init
+    if (!init || !init.arguments) return
+
+    if (
+      (init.parent._babelType === 'CallExpression' &&
+        init.parent.callee.name === 'useProxy') ||
+      (init._babelType === 'CallExpression' && init.callee.name === 'useProxy')
+    ) {
+      if (
+        init.arguments[0] &&
+        init.arguments[0]._babelType === 'MemberExpression' &&
+        node.parent._babelType === 'MemberExpression'
+      ) {
+        return (isUsed = isSameMemmberExpression(
+          node.parent.parent.left,
+          init.arguments[0]
+        ))
+      } else if (
+        init.arguments[0].type === 'Identifier' &&
+        node.type === 'Identifier' &&
+        node.parent.type !== 'MemberExpression'
+      ) {
+        return (isUsed = init.arguments[0].name === node.name)
+      }
+    }
+  })
+  if (!isUsed && scope.upper)
+    return (isUsed = isUsedInUseProxy(node, scope.upper))
+  return isUsed
+}
 
 function which(name, scope) {
   let kind = null
@@ -68,10 +128,24 @@ export default {
       Identifier(node) {
         const scope = context.getScope(node)
         if (
+          (node.parent.type === 'AssignmentExpression' ||
+            (node.parent.type === 'MemberExpression' &&
+              node.parent.parent.type === 'AssignmentExpression')) &&
+          node.parent.object !== node &&
+          isUsedInUseProxy(node, scope)
+        ) {
+          return context.report({
+            node: node.parent.parent,
+            message: UNEXPECTED_STATE_MUTATING,
+          })
+        }
+
+        if (
           node.parent.type === 'MemberExpression' &&
           node.parent.property === node
         )
           return
+
         const kind = which(node.name, scope)
         if (kind === 'state' && isInRender(node)) {
           return context.report({
