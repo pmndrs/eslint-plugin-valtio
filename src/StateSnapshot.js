@@ -81,8 +81,6 @@ function isSameMemmberExpression(first, second) {
 }
 function isUsedInUseProxy(node, scope) {
   let isUsed = false
-
-  console.log(node.property && node.property.type === 'Literal', node)
   if (!scope) return isUsed
 
   scope.variables.forEach((variable) => {
@@ -102,20 +100,16 @@ function isUsedInUseProxy(node, scope) {
         init.arguments[0]._babelType === 'MemberExpression' &&
         node._babelType === 'MemberExpression'
       ) {
-        console.log('here', init.arguments[0], node)
-
         return (isUsed = isSameMemmberExpression(node, init.arguments[0]))
       } else if (
         init.arguments[0].type === 'Identifier' &&
         node.type === 'Identifier' &&
         !isInMemberExpression(node)
       ) {
-        console.log('here', init.arguments[0], node)
         return (isUsed = init.arguments[0].name === node.name)
       }
     }
   })
-  isUsed && console.log('isUsed', isUsed, node)
   if (!isUsed && scope.upper)
     return (isUsed = isUsedInUseProxy(node, scope.upper))
   return isUsed
@@ -170,7 +164,6 @@ export default {
                 outerMemberExpression(node).property.type === 'Literal' &&
                 isUsedInUseProxy(outerMemberExpression(node), scope))))
         ) {
-          console.log(node)
           return context.report({
             node: node.parent.parent,
             message: UNEXPECTED_STATE_MUTATING,
