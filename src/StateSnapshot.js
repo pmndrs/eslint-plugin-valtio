@@ -2,9 +2,8 @@ const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const PROXY_RENDER_PHASE_MESSAGE =
   'Using proxies in the render phase would cause unexpected problems.'
-export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state'
-export const UNEXPECTED_STATE_MUTATING =
-  'Unexpected state mutating( I think we have to change that'
+export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state.'
+export const UNEXPECTED_STATE_MUTATING = `Mutating a proxy object itself. this might not be expected as it's not reactive.`
 
 function outerMemberExpression(node) {
   if (node.parent.type !== 'MemberExpression') {
