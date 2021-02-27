@@ -168,5 +168,15 @@ ruleTester.run('state-snapshot-rule', rule, {
   `,
       errors: [COMPUTED_DECLARATION_ORDER],
     },
+    {
+      code: `const state = proxyWithComputed({
+  count: 0,
+}, {
+  quadrupled: ({ doubled }) => doubled * 2,
+  doubled: (snap) => snap.count * 2,
+})
+  `,
+      errors: [COMPUTED_DECLARATION_ORDER],
+    },
   ],
 })
