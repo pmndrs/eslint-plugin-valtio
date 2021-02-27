@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint'
 import rule, {
+  COMPUTED_DECLARATION_ORDER,
   PROXY_RENDER_PHASE_MESSAGE,
   SNAPSHOT_CALLBACK_MESSAGE,
   UNEXPECTED_STATE_MUTATING,
@@ -156,6 +157,16 @@ ruleTester.run('state-snapshot-rule', rule, {
       }
       `,
       errors: [UNEXPECTED_STATE_MUTATING],
+    },
+    {
+      code: `const state = proxyWithComputed({
+  count: 0,
+}, {
+  quadrupled: (snap) => snap.doubled * 2,
+  doubled: (snap) => snap.count * 2,
+})
+  `,
+      errors: [COMPUTED_DECLARATION_ORDER],
     },
   ],
 })

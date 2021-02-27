@@ -4,6 +4,8 @@ export const PROXY_RENDER_PHASE_MESSAGE =
   'Using proxies in the render phase would cause unexpected problems.'
 export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state.'
 export const UNEXPECTED_STATE_MUTATING = `Mutating a proxy object itself. this might not be expected as it's not reactive.`
+export const COMPUTED_DECLARATION_ORDER =
+  'Not found, If a computed field deriving value is created from another computed, the computed source should be declared first.'
 
 function outerMemberExpression(node) {
   if (node.parent.type !== 'MemberExpression') {
