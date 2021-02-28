@@ -7,12 +7,92 @@ export const UNEXPECTED_STATE_MUTATING = `Mutating a proxy object itself. this m
 export const COMPUTED_DECLARATION_ORDER =
   'Not found, If a computed field deriving value is created from another computed, the computed source should be declared first.'
 
-function outerMemberExpression(node) {
-  if (node.parent.type !== 'MemberExpression') {
-    return node
-  }
-  return outerMemberExpression(node.parent)
+export default {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Warns about unexpected problems',
+      category: 'Unexpected Problems',
+      recommended: 'true',
+    },
+  },
+  create(context) {
+    return {
+      Identifier(node) {
+        const scope = context.getScope(node)
+
+        if (isInComputed(node) && isInProperty(node)) {
+          if (
+            isInMemberExpression(node) &&
+            returnFirstObjectIdentifier(outerMemberExpression(node)) ===
+              node.name &&
+            isComputedIdentifier(node, scope) &&
+            returnComputedValues(node)[0].includes(
+              returnSecondObjectIdentifier(outerMemberExpression(node))
+            ) &&
+            !returnComputedValues(node)[1].includes(
+              returnSecondObjectIdentifier(outerMemberExpression(node))
+            )
+          ) {
+            return context.report({
+              node: outerMemberExpression(node),
+              message: COMPUTED_DECLARATION_ORDER,
+            })
+          } else if (
+            isInObjectPattern(node) &&
+            isInParams(node) &&
+            node.parent.key === node &&
+            !returnComputedValues(node)[1].includes(node.name) &&
+            returnComputedValues(node)[0].includes(node.name)
+          ) {
+            return context.report({
+              node: node,
+              message: COMPUTED_DECLARATION_ORDER,
+            })
+          }
+        }
+
+        if (
+          (isInAssignmentExpression(node) &&
+            !isInMemberExpression(node) &&
+            isUsedInUseProxy(node, scope)) ||
+          (isInAssignmentExpression(node) &&
+            isInMemberExpression(node) &&
+            ((outerMemberExpression(node).property === node &&
+              isUsedInUseProxy(outerMemberExpression(node), scope)) ||
+              (node.parent.object === node &&
+                outerMemberExpression(node).property.type === 'Literal' &&
+                isUsedInUseProxy(outerMemberExpression(node), scope))))
+        ) {
+          return context.report({
+            node: node.parent.parent,
+            message: UNEXPECTED_STATE_MUTATING,
+          })
+        }
+        if (
+          node.parent.type === 'MemberExpression' &&
+          node.parent.property === node
+        )
+          return
+
+        const kind = which(node.name, scope)
+        if (kind === 'state' && isInRender(node)) {
+          return context.report({
+            node,
+            message: PROXY_RENDER_PHASE_MESSAGE,
+          })
+        }
+        if (kind === 'snapshot' && isInCallback(node)) {
+          return context.report({
+            node,
+            message: SNAPSHOT_CALLBACK_MESSAGE,
+          })
+        }
+      },
+    }
+  },
 }
+
 function isInSomething(node, thing) {
   if (node.parent && node.parent.type !== thing) {
     return isInSomething(node.parent, thing)
@@ -22,8 +102,116 @@ function isInSomething(node, thing) {
   return false
 }
 
+function outerMemberExpression(node) {
+  if (node.parent.type !== 'MemberExpression') {
+    return node
+  }
+  return outerMemberExpression(node.parent)
+}
+function outerObjectExpression(node) {
+  if (node.parent.type !== 'ObjectExpression') {
+    return node
+  }
+  return outerObjectExpression(node.parent)
+}
+function isInComputed(node) {
+  if (
+    node.parent &&
+    node.parent.type === 'CallExpression' &&
+    node.parent.callee.name === 'proxyWithComputed' &&
+    node.parent.arguments[1] === node
+  ) {
+    return true
+  } else if (node.parent) {
+    return isInComputed(node.parent)
+  }
+  return false
+}
+function isInParams(node) {
+  if (node.parent && node.parent.params && node.parent.params.includes(node)) {
+    return true
+  } else if (node.parent) {
+    return isInParams(node.parent)
+  }
+  return false
+}
+function isInObjectPattern(node) {
+  return isInSomething(node, 'ObjectPattern')
+}
+function returnComputedValues(node) {
+  if (
+    node.parent.parent &&
+    node.parent.parent.type === 'CallExpression' &&
+    node.parent.parent.callee.name === 'proxyWithComputed' &&
+    node.parent.parent.arguments[1] === node.parent
+  ) {
+    return [
+      node.parent.properties.map((v) => v.key.name),
+      node.parent.properties
+        .slice(0, node.parent.properties.indexOf(node) + 1)
+        .map((v) => v.key.name),
+    ]
+  } else if (node.parent.parent) {
+    return returnComputedValues(node.parent)
+  }
+  return []
+}
+function returnSecondObjectIdentifier(node) {
+  if (
+    node &&
+    node.object.type === 'Identifier' &&
+    node.property.type === 'Identifier'
+  ) {
+    return node.property.name
+  } else if (
+    node &&
+    node.object.type === 'MemberExpression' &&
+    node.property.type === 'Identifier'
+  ) {
+    return returnSecondObjectIdentifier(node.object)
+  }
+  return null
+}
+function returnFirstObjectIdentifier(node) {
+  if (node && node.object.type === 'Identifier') {
+    return node.object.name
+  } else if (node && node.object.type === 'MemberExpression') {
+    return returnFirstObjectIdentifier(node.object)
+  }
+  return null
+}
+function isComputedIdentifier(node, scope) {
+  const firstIdentifier = returnFirstObjectIdentifier(
+    outerMemberExpression(node)
+  )
+
+  let isIt = false
+  if (!scope) {
+    return false
+  }
+  scope.variables.forEach((variable) => {
+    const def = variable.defs[0]
+    if (!def || isIt) return
+
+    const init = def.node.init
+
+    if (init && init.type !== 'Parameter') return
+
+    if (firstIdentifier === variable.name) {
+      return (isIt = true)
+    }
+  })
+
+  if (!isIt && scope.upper)
+    return (isIt = isComputedIdentifier(node, scope.upper))
+
+  return isIt
+}
 function isInMemberExpression(node) {
   return isInSomething(node, 'MemberExpression')
+}
+function isInProperty(node) {
+  return isInSomething(node, 'Property')
 }
 function isInAssignmentExpression(node) {
   return (
@@ -138,58 +326,4 @@ function isInRender(node) {
   } else {
     return isInRender(node.parent)
   }
-}
-
-export default {
-  meta: {
-    type: 'problem',
-    docs: {
-      description: 'Warns about unexpected problems',
-      category: 'Unexpected Problems',
-      recommended: 'true',
-    },
-  },
-  create(context) {
-    return {
-      Identifier(node) {
-        const scope = context.getScope(node)
-        if (
-          (isInAssignmentExpression(node) &&
-            !isInMemberExpression(node) &&
-            isUsedInUseProxy(node, scope)) ||
-          (isInAssignmentExpression(node) &&
-            isInMemberExpression(node) &&
-            ((outerMemberExpression(node).property === node &&
-              isUsedInUseProxy(outerMemberExpression(node), scope)) ||
-              (node.parent.object === node &&
-                outerMemberExpression(node).property.type === 'Literal' &&
-                isUsedInUseProxy(outerMemberExpression(node), scope))))
-        ) {
-          return context.report({
-            node: node.parent.parent,
-            message: UNEXPECTED_STATE_MUTATING,
-          })
-        }
-        if (
-          node.parent.type === 'MemberExpression' &&
-          node.parent.property === node
-        )
-          return
-
-        const kind = which(node.name, scope)
-        if (kind === 'state' && isInRender(node)) {
-          return context.report({
-            node,
-            message: PROXY_RENDER_PHASE_MESSAGE,
-          })
-        }
-        if (kind === 'snapshot' && isInCallback(node)) {
-          return context.report({
-            node,
-            message: SNAPSHOT_CALLBACK_MESSAGE,
-          })
-        }
-      },
-    }
-  },
 }
