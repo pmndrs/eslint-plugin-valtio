@@ -29,7 +29,7 @@ ruleTester.run('state-snapshot-rule', rule, {
   `,
     `
   function Counter() {
-    const snapshot = useProxy(state)
+    const snapshot = useSnapshot(state)
     const { count } = snapshot
     return (
       <div>{count} {snapshot.count}</div>
@@ -38,13 +38,13 @@ ruleTester.run('state-snapshot-rule', rule, {
   `,
     `
   function Counter() {
-    const { count } = useProxy(state)
+    const { count } = useSnapshot(state)
     return <div>{count}</div>
   }
   `,
     `
   function Counter() {
-    const snap = useProxy(state)
+    const snap = useSnapshot(state)
     useEffect(() => {
       state.count += 1
     }, [])
@@ -71,7 +71,7 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
   function Counter() {
-    const snapshot = useProxy(state)
+    const snapshot = useSnapshot(state)
     useEffect(() => {
       ++snapshot.count 
     })
@@ -85,7 +85,7 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
   function Counter() {
-    const { count } = useProxy(state)
+    const { count } = useSnapshot(state)
     useEffect(() => {
       ++count 
     })
@@ -100,7 +100,7 @@ ruleTester.run('state-snapshot-rule', rule, {
       code: `
   const state = proxy({ count: 0})
   function Counter() {
-    const snap = useProxy(state)
+    const snap = useSnapshot(state)
     return (
       <div>
         {snap.count}
@@ -114,8 +114,8 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
       function Counter() {
-        const snap = useProxy(state.r.b)
-        const snap1 = useProxy(state)
+        const snap = useSnapshot(state.r.b)
+        const snap1 = useSnapshot(state)
         const handleClick = () => {
           state.r.b = ['hello', 'ss']
           state = ['hello']
@@ -128,7 +128,7 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
       function Counter() {
-        const snap = useProxy(state)
+        const snap = useSnapshot(state)
         const handleClick = () => {
           state = ['hello']
         }
@@ -140,7 +140,7 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
       function Counter() {
-        const snap = useProxy(state.a)
+        const snap = useSnapshot(state.a)
         const handleClick = () => {
           state.a = ['hello']
         }
@@ -152,7 +152,7 @@ ruleTester.run('state-snapshot-rule', rule, {
     {
       code: `
       function Counter() {
-        const snap = useProxy(state[0])
+        const snap = useSnapshot(state[0])
         return <div>{snap}<button onClick={() => ++state[0]}>inc</button></div>
       }
       `,
