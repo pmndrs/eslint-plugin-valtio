@@ -237,7 +237,7 @@ function which(name, scope) {
       return (kind = 'state')
     } else if (
       init.type === 'CallExpression' &&
-      init.callee.name === 'useProxy'
+      init.callee.name === 'useSnapshot'
     ) {
       return (kind = 'snapshot')
     }
@@ -281,8 +281,9 @@ function isUsedInUseProxy(node, scope) {
 
     if (
       (init.parent._babelType === 'CallExpression' &&
-        init.parent.callee.name === 'useProxy') ||
-      (init._babelType === 'CallExpression' && init.callee.name === 'useProxy')
+        init.parent.callee.name === 'useSnapshot') ||
+      (init._babelType === 'CallExpression' &&
+        init.callee.name === 'useSnapshot')
     ) {
       if (
         init.arguments[0] &&
