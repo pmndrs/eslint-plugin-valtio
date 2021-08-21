@@ -1,3 +1,5 @@
+import { isInSomething } from './lib/utils'
+
 const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const PROXY_RENDER_PHASE_MESSAGE =
@@ -93,15 +95,6 @@ export default {
   },
 }
 
-function isInSomething(node, thing) {
-  if (node.parent && node.parent.type !== thing) {
-    return isInSomething(node.parent, thing)
-  } else if (node.parent && node.parent.type === thing) {
-    return true
-  }
-  return false
-}
-
 function outerMemberExpression(node) {
   if (node.parent.type !== 'MemberExpression') {
     return node
@@ -135,9 +128,11 @@ function isInParams(node) {
   }
   return false
 }
+
 function isInObjectPattern(node) {
   return isInSomething(node, 'ObjectPattern')
 }
+
 function returnComputedValues(node) {
   if (
     node.parent.parent &&
