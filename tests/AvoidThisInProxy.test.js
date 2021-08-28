@@ -6,28 +6,101 @@ const ruleTester = new RuleTester({
   parser: require.resolve('babel-eslint'),
 })
 
-ruleTester.run('avoid-this-in-proxy', rule, {
-  valid: [
-    `
-    export const store = proxy({
-      toast: {
+const testCases = {
+  valid: [],
+  invalid: [],
+}
+
+// Valid Cases *Start*
+
+testCases.valid.push(`const state = proxy({
+  count: 0,
+  inc() {
+    ++state.count
+  },
+})
+`)
+
+testCases.valid.push(`const state = proxy({
+  count: 0,
+  inc: function () {
+    ++state.count
+  },
+})
+`)
+
+testCases.valid.push(`const state = proxy({
+  count: 0,
+  inc: () => {
+    ++state.count
+  },
+})
+`)
+
+testCases.valid.push(`const state = proxy({
+  arr: [],
+  inc: () => {
+    state.arr = [1, 2, 3].map(function (x) {
+      return x / this
+    }, 10)
+  },
+})`)
+
+testCases.valid.push(`
+  export const store = proxy({
+    toast: {
+      success: null,
+      error: null,
+      open: false,
+    },
+    resetToast: () => {
+      store.toast = {
         success: null,
         error: null,
         open: false,
-      },
-      resetToast: () => {
-        store.toast = {
-          success: null,
-          error: null,
-          open: false,
-        };
-      },
-    });
+      };
+    },
+  });
+`)
+
+// Valid Cases *End*
+
+// Invalid Cases *Start*
+
+testCases.invalid.push({
+  code: `const state = proxy({
+    count: 0,
+    inc: function () {
+      ++this.count
+    },
+  })`,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+testCases.invalid.push({
+  code: `const state = proxy({
+    count: [],
+    inc() {
+      (() => { ++this.count })()
+    },
+  })`,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+// invalid (technically possible though)
+testCases.invalid.push({
+  code: `const state = proxy({
+    count: 0,
+    inc: () => {
+      ++this.count
+    },
+  })
   `,
-  ],
-  invalid: [
-    {
-      code: `
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+testCases.invalid.push({
+  code: `
       export const store = proxy({
         toast: {
           success: null,
@@ -43,7 +116,20 @@ ruleTester.run('avoid-this-in-proxy', rule, {
         },
       });
       `,
-      errors: [MESSAGE_THIS_IN_PROXY],
-    },
-  ],
+  errors: [MESSAGE_THIS_IN_PROXY],
 })
+
+testCases.invalid.push({
+  code: `const state = proxy({
+    count: 0,
+    inc() {
+      ++this.count
+    },
+  })
+  `,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+// Invalid Cases *End*
+
+ruleTester.run('avoid-this-in-proxy', rule, testCases)
