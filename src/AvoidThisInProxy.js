@@ -1,7 +1,7 @@
-import { isInSomething } from './lib/utils'
+import { isInSomething, nearestCalleeName } from './lib/utils'
 
-export const MESSAGE_THIS_IN_PROXY =
-  'Avoid using `this` in valtio.proxy context. It might lead to unexpected results'
+export const MESSAGE_THIS_IN_PROXY = `Avoid using \`this\` in valtio.proxy context.It might lead to unexpected results.
+Using this is valid, but often a pitfall for beginners.`
 
 export default {
   meta: {
@@ -15,7 +15,7 @@ export default {
   create(context) {
     return {
       ThisExpression(node) {
-        if (isInSomething(node, 'CallExpression') && isInProxy(node)) {
+        if (isInSomething(node, 'CallExpression') && isCalledByProxy(node)) {
           context.report({
             node,
             message: MESSAGE_THIS_IN_PROXY,
@@ -26,19 +26,9 @@ export default {
   },
 }
 
-function isInProxy(node) {
-  if (
-    node.parent &&
-    node.parent.type !== 'Identifier' &&
-    node.parent.name !== 'proxy'
-  ) {
-    return node.parent
-  } else if (
-    node.parent &&
-    node.parent.type === 'Identifier' &&
-    node.parent.name === 'proxy'
-  ) {
-    return true
+function isCalledByProxy(node) {
+  if (nearestCalleeName(node) !== 'proxy') {
+    return false
   }
-  return false
+  return true
 }
