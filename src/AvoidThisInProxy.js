@@ -21,14 +21,13 @@ export default {
     return {
       Identifier(node) {
         const cachedIdentifier = getIdentifier(identifiersList, node.name)
-
         if (
           cachedIdentifier &&
           cachedIdentifier.hasThis &&
           isCalledByProxy(node)
         ) {
           context.report({
-            node,
+            node: cachedIdentifier.thisNode,
             message: MESSAGE_THIS_IN_PROXY,
           })
         }
@@ -38,6 +37,7 @@ export default {
         identifiersList.push({
           identifier: parent.id,
           definition: parent.init,
+          thisNode: node,
           hasThis: true,
         })
 
