@@ -61,3 +61,29 @@ export function nearestCalleeName(node) {
 
   return nearestCalleeName(node.parent)
 }
+
+/**
+ * @param {any} node ASTNode to start from
+ * @param {string} nodeType the type of ASTNode to look for
+ *
+ * @returns {any} ASTNode
+ * @example
+ *  // if `this` in the below example is the node and
+ *  // you want to check if it's a function, then
+ *
+ * function a(){
+ *  console.log(this)
+ * }
+ *
+ *  getParentOfNodeType(thisNode,"FunctionExpression") // ASTNode.type: "FunctionExpression"
+ *  getParentOfNodeType(thisNode,"ExpressionStatement") // null
+ *
+ */
+export function getParentOfNodeType(node, nodeType) {
+  if (node.parent && node.parent.type !== nodeType) {
+    return getParentOfNodeType(node.parent, nodeType)
+  } else if (node.parent && node.parent.type === nodeType) {
+    return node.parent
+  }
+  return null
+}

@@ -1,4 +1,8 @@
-import { isInSomething, nearestCalleeName } from './lib/utils'
+import {
+  getParentOfNodeType,
+  isInSomething,
+  nearestCalleeName,
+} from './lib/utils'
 
 export const MESSAGE_THIS_IN_PROXY = `Avoid using \`this\` in valtio.proxy context.It might lead to unexpected results.
 Using this is valid, but often a pitfall for beginners.`
@@ -46,15 +50,6 @@ export default {
       },
     }
   },
-}
-
-export function getParentOfNodeType(node, nodeType) {
-  if (node.parent && node.parent.type !== nodeType) {
-    return getParentOfNodeType(node.parent, nodeType)
-  } else if (node.parent && node.parent.type === nodeType) {
-    return node.parent
-  }
-  return null
 }
 
 function getIdentifier(allIdentifiers, identifier) {
