@@ -63,6 +63,21 @@ testCases.valid.push(`
   });
 `)
 
+testCases.valid.push(`
+const initialObj = {
+  count: 0,
+  inc() {
+    ++this.count;
+  },
+};
+
+const otherObj = {
+  count: 0,
+};
+
+const state = proxy(otherObj);
+`)
+
 // Valid Cases *End*
 
 // Invalid Cases *Start*
@@ -128,6 +143,64 @@ testCases.invalid.push({
   })
   `,
   errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+testCases.invalid.push({
+  code: `
+  const initialObj = {
+    count: 0,
+    inc() {
+      ++this.count
+    },
+  }
+  
+  const state = proxy(initialObj)
+  `,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+testCases.invalid.push({
+  code: `
+  const initialObj = {
+    count: 0,
+    inc() {
+      ++this.count
+    },
+  }
+
+  const otherState = {
+    count: 0,
+    inc() {
+      ++otherState.count
+    },
+  }
+  
+  const state = proxy(otherState)
+  const stateTwo = proxy(initialObj)
+  `,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
+testCases.invalid.push({
+  code: `
+  const initialObj = {
+    count: 0,
+    inc() {
+      ++this.count
+    },
+  }
+
+  const otherState = {
+    count: 0,
+    inc() {
+      ++this.count
+    },
+  }
+  
+  const state = proxy(otherState)
+  const stateTwo = proxy(initialObj)
+  `,
+  errors: [MESSAGE_THIS_IN_PROXY, MESSAGE_THIS_IN_PROXY],
 })
 
 // Invalid Cases *End*

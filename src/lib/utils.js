@@ -40,7 +40,10 @@ export function isInSomething(node, thing) {
  *
  */
 export function nearestCalleeName(node) {
-  const hasCallee = node.parent && node.parent.callee
+  if (!(node && node.parent)) {
+    return false
+  }
+  const hasCallee = node.parent.callee
   if (!hasCallee) {
     return nearestCalleeName(node.parent)
   }

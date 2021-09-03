@@ -13,8 +13,30 @@ export default {
     },
   },
   create(context) {
+    const identifiersList = []
     return {
+      Identifier(node) {
+        const cachedIdentifier = getIdentifier(identifiersList, node.name)
+
+        if (
+          cachedIdentifier &&
+          cachedIdentifier.hasThis &&
+          isCalledByProxy(node)
+        ) {
+          context.report({
+            node,
+            message: MESSAGE_THIS_IN_PROXY,
+          })
+        }
+      },
       ThisExpression(node) {
+        const parent = getParentOfNodeType(node, 'VariableDeclarator')
+        identifiersList.push({
+          identifier: parent.id,
+          definition: parent.init,
+          hasThis: true,
+        })
+
         if (isInSomething(node, 'CallExpression') && isCalledByProxy(node)) {
           context.report({
             node,
@@ -24,6 +46,23 @@ export default {
       },
     }
   },
+}
+
+export function getParentOfNodeType(node, nodeType) {
+  if (node.parent && node.parent.type !== nodeType) {
+    return getParentOfNodeType(node.parent, nodeType)
+  } else if (node.parent && node.parent.type === nodeType) {
+    return node.parent
+  }
+  return null
+}
+
+function getIdentifier(allIdentifiers, identifier) {
+  for (let i = 0; i < allIdentifiers.length; i++) {
+    if (allIdentifiers[i].identifier.name === identifier) {
+      return allIdentifiers[i]
+    }
+  }
 }
 
 function isCalledByProxy(node) {
