@@ -203,6 +203,18 @@ testCases.invalid.push({
   errors: [MESSAGE_THIS_IN_PROXY, MESSAGE_THIS_IN_PROXY],
 })
 
+testCases.invalid.push({
+  code: `
+  const initialObj = {
+    count: 0,
+    countInc: ++this.count
+  }
+  
+  const state = proxy(initialObj)
+  `,
+  errors: [MESSAGE_THIS_IN_PROXY],
+})
+
 // Invalid Cases *End*
 
 ruleTester.run('avoid-this-in-proxy', rule, testCases)
