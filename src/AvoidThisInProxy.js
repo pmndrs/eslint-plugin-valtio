@@ -5,7 +5,7 @@ import {
 } from './lib/utils'
 
 export const MESSAGE_THIS_IN_PROXY = `Avoid using \`this\` in valtio.proxy context.It might lead to unexpected results.
-Using this is valid, but often a pitfall for beginners.`
+Using \`this\` is valid, but often a pitfall for beginners.`
 
 export default {
   meta: {
