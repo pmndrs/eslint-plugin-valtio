@@ -31,7 +31,8 @@ You can enable the rule to activate the plugin.
 ```json
 {
   "rules": {
-    "valtio/state-snapshot-rule": "warn"
+    "valtio/state-snapshot-rule": "warn",
+    "altio/avoid-this-in-proxy" :"warn",
   } 
 }
 ```
@@ -86,3 +87,32 @@ const state = proxyWithComputed({
   doubled: (snap) => snap.count * 2,
 })
 ```
+
+### Using `this` in proxy (`valtio/avoid-this-in-proxy`)  
+When working with `proxy` using `this` in it's context as long as taken care of will work as expected but since the implementation differs from a simple `proxy` to a `snapshot` version of the proxy, using `this` could get confusing. This rule is specifically for beginners that are adapting to the structure/differences in valtio. 
+```jsx
+const state = proxy({
+  count: 0,
+  inc() {
+    ++state.count; // works as the state is being modified
+  },
+});
+
+const state = proxy({
+  count: 0,
+  inc() {
+    ++this.count; // works as the context belongs to proxy
+  },
+});
+
+const state = snapshot(
+  proxy({
+    count: 0,
+    inc() {
+      ++this.count; // won't work since the params are now forzen since you are in a snapshot.
+    },
+  })
+);
+```
+
+
