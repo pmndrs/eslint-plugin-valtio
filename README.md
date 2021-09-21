@@ -32,7 +32,7 @@ You can enable the rule to activate the plugin.
 {
   "rules": {
     "valtio/state-snapshot-rule": "warn",
-    "altio/avoid-this-in-proxy" :"warn",
+    "valtio/avoid-this-in-proxy" :"warn",
   } 
 }
 ```
