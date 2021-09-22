@@ -34,6 +34,11 @@ export default {
       },
       ThisExpression(node) {
         const parent = getParentOfNodeType(node, 'VariableDeclarator')
+
+        if (!(parent && parent.id && parent.init)) {
+          return
+        }
+
         identifiersList.push({
           identifier: parent.id,
           definition: parent.init,
@@ -54,7 +59,11 @@ export default {
 
 function getIdentifier(allIdentifiers, identifier) {
   for (let i = 0; i < allIdentifiers.length; i++) {
-    if (allIdentifiers[i].identifier.name === identifier) {
+    if (
+      allIdentifiers[i] &&
+      allIdentifiers[i].identifier &&
+      allIdentifiers[i].identifier.name === identifier
+    ) {
       return allIdentifiers[i]
     }
   }
