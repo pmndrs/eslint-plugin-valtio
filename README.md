@@ -38,47 +38,67 @@ You can enable the rule to activate the plugin.
 ```
 
 ## Why
+
 This plugin helps you catch common mistakes that can occur in [valtio](https://github.com/pmndrs/valtio). Here are some cases that this plugin catches.
 
-### Snapshots in callbacks
-For example, we shouldn't use snapshots in callbacks like useEffects, because snapshots are not stable there.
+### Snapshots in callbacks are not recommended
+
+We shouldn't use snapshots in callbacks, because snapshots can be stale there.
+
 ```jsx
-const state = proxy({ count: 0})
+const state = proxy({ count: 0 })
+
 function App() {
-  const snapshot = useSnapshot(state)
-  useEffect(() => {
-    ++snapshot.count // Better to just use proxy state.
-  })
+  const snap = useSnapshot(state)
+  const handleClick = () => {
+    console.log(snap.count) // This is not recommended as it can be stale.
+  }
   return (
-    <div>{snapshot.count}</div>
+    <div>
+      {snap.count} <button onClick={handleClick}>click</button> 
+    </div>
   )
 }
 ```
-### Proxies in render phase
-In render phase, it's better to use Snapshots (as they're made to be compatible with react's reactivity) instead of states directly.
+
+### Proxies in render phase is not recommended
+
+In render phase, it's better to use snapshots (as they're made to be compatible with react's reactivity) instead of states directly.
+
 ```jsx
-const state = proxy({ count: 0})
+const state = proxy({ count: 0 })
+
 function App() {
   return (
     <div>
-      {state.count} // Using proxies in the render phase would cause unexpected problems.
+      {state.count} // This is not recommended as it is not reactive.
     </div>
   )
 }
 ``` 
-### State mutating
-Snapshots are made to be used with react, so we recommend them for mutating, and not states directly.
+
+### Snapshots mutating is not possible
+
+Snapshots are made to be used in the react render phase,
+and not mutable.
+So, we need to mutate proxy states directly.
+
 ```jsx
-const state = proxy({ count: 0})
+const state = proxy({ count: 0 })
+
 function App() {
+  const snap = useSnapshot(state)
   const handleClick = () => {
-    state.count = state.count + 1 // Mutating a proxy object itself. this might not be expected as it's not reactive.
+    ++snap.count // This doesn't work. Use proxy state instead.
   }
- return <button onClick={handleClick}>mutate</button> 
+  return <button onClick={handleClick}>mutate</button> 
 }
 ```
+
 ### Computed declaration order
+
 In the way valtio treats objects in `proxyWithComputed`, the order of fields matters; for example, `quadrupled` comes before `doubled`, but it depends on `doubled`, so the order is wrong! So we need to bring `doubled` first. 
+
 ```jsx
 const state = proxyWithComputed({
   count: 0,
@@ -89,7 +109,9 @@ const state = proxyWithComputed({
 ```
 
 ### Using `this` in proxy (`valtio/avoid-this-in-proxy`)  
+
 When working with `proxy` using `this` in it's context as long as taken care of will work as expected but since the implementation differs from a simple `proxy` to a `snapshot` version of the proxy, using `this` could get confusing. This rule is specifically for beginners that are adapting to the structure/differences in valtio. 
+
 ```jsx
 const state = proxy({
   count: 0,
@@ -114,5 +136,3 @@ const state = snapshot(
   })
 );
 ```
-
-
