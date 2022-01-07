@@ -26,7 +26,7 @@ Add `valtio` to the `extends` section of your `.eslintrc` configuration file.
 }
 ```
 
-You can enable the rule to activate the plugin.
+Alternatively, you can enable rules in the plugin, selectively.
 
 ```json
 {
