@@ -51,6 +51,21 @@ ruleTester.run('state-snapshot-rule', rule, {
     return <div>{snap.foo}</div>
   }
   `,
+    `
+const state = proxy({
+  a0: { b: { c: { d: 'hello', e: 'world' } } },
+  a1: { b: { c: 'a1c' } },
+});
+
+function useExample2(s: typeof state) {
+  const {b: {c} } = useSnapshot(s.a1);
+
+  useEffect(() => {
+    // if (c === 'a1c') {
+      state.a1.b.c = 'example';
+    // }
+  }, [c]);
+}`,
   ],
   invalid: [
     {
@@ -177,6 +192,18 @@ ruleTester.run('state-snapshot-rule', rule, {
 })
   `,
       errors: [COMPUTED_DECLARATION_ORDER],
+    },
+    {
+      code: `function Counter() {
+  const snapshot = useSnapshot(state)
+  useEffect(() => {
+    snapshot.count = randomValue + 1;
+  })
+  return (
+    <></>
+  )
+}`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
     },
   ],
 })

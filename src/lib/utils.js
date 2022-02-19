@@ -1,3 +1,7 @@
+export const callExpressions = ['JSXExpressionContainer', 'CallExpression']
+export const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
+export const writingOpExpressionTypes = ['UpdateExpression']
+
 /**
  * @param {any} node ASTNode to check
  * @param {string} thing Check if the node is inside a particular type of ASTNode
@@ -86,4 +90,57 @@ export function getParentOfNodeType(node, nodeType) {
     return node.parent
   }
   return null
+}
+
+/**
+ * @description check if the node is only being read
+ * and not being used to manipulate state, recursively checks in the node is
+ * in a member expression as well
+ * @param {*} node
+ */
+export function isReadOnly(node) {
+  if (writingOpExpressionTypes.indexOf(node.parent.type) > -1) {
+    return false
+  }
+
+  if (node.parent.type === 'AssignmentExpression' && isLeftOfAssignment(node)) {
+    return false
+  }
+
+  if (node.parent.type === 'MemberExpression') {
+    return isReadOnly(node.parent)
+  }
+
+  return true
+}
+
+/**
+ *
+ * @param {*} node
+ * @returns {boolean} true if the node is on the left
+ * of an assignment expression aka being modified
+ */
+export function isLeftOfAssignment(node) {
+  if (Object.is(node.parent.left, node)) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * @description get the closes call expression or function defintion
+ * @param {*} node
+ */
+export function returnFirstCallback(node) {
+  if (!node.parent || !node.parent.type) return false
+
+  if (
+    callExpressions.includes(node.parent.type) &&
+    functionTypes.includes(node.type)
+  ) {
+    return node
+  } else {
+    return returnFirstCallback(node.parent)
+  }
 }

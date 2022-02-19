@@ -1,7 +1,10 @@
-import { isInSomething } from './lib/utils'
+import {
+  callExpressions,
+  functionTypes,
+  isInSomething,
+  isReadOnly,
+} from './lib/utils'
 
-const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
-const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const PROXY_RENDER_PHASE_MESSAGE =
   'Using proxies in the render phase would cause unexpected problems.'
 export const SNAPSHOT_CALLBACK_MESSAGE = 'Better to just use proxy state.'
@@ -84,11 +87,20 @@ export default {
             message: PROXY_RENDER_PHASE_MESSAGE,
           })
         }
-        if (kind === 'snapshot' && isInCallback(node)) {
-          return context.report({
-            node,
-            message: SNAPSHOT_CALLBACK_MESSAGE,
-          })
+
+        if (kind === 'snapshot') {
+          // ignore the error if the snapshot
+          // is just being read
+          if (isReadOnly(node)) {
+            return
+          }
+
+          if (isInCallback(node)) {
+            return context.report({
+              node,
+              message: SNAPSHOT_CALLBACK_MESSAGE,
+            })
+          }
         }
       },
     }
