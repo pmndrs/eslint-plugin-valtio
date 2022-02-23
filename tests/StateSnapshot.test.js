@@ -52,19 +52,23 @@ ruleTester.run('state-snapshot-rule', rule, {
   }
   `,
     `
-const state = proxy({
-  a0: { b: { c: { d: 'hello', e: 'world' } } },
-  a1: { b: { c: 'a1c' } },
-});
-
-function useExample2(s: typeof state) {
+function useExample2(s) {
   const {b: {c} } = useSnapshot(s.a1);
 
   useEffect(() => {
-    // if (c === 'a1c') {
+    if (c === 'a1c') {
       state.a1.b.c = 'example';
-    // }
+    }
   }, [c]);
+}`,
+
+    `
+function useProxyStateExample(a) {
+  const s = useSnapshot(a);
+
+  useEffect(() => {
+      a.a = 'example';
+  }, [s.a]);
 }`,
   ],
   invalid: [
@@ -203,6 +207,19 @@ function useExample2(s: typeof state) {
     <></>
   )
 }`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      function useProxyStateExample(a) {
+        const s = useSnapshot(a);
+      
+        useEffect(() => {
+          if(s.a==="1"){
+            s.a = 'example';
+          }
+        }, [s.a]);
+      }`,
       errors: [SNAPSHOT_CALLBACK_MESSAGE],
     },
   ],
