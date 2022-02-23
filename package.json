@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-valtio",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "An eslint plugin for better valtio experience",
   "main": "index.js",
   "scripts": {
