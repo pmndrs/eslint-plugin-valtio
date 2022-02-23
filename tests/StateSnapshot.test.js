@@ -51,6 +51,25 @@ ruleTester.run('state-snapshot-rule', rule, {
     return <div>{snap.foo}</div>
   }
   `,
+    `
+function useExample2(s) {
+  const {b: {c} } = useSnapshot(s.a1);
+
+  useEffect(() => {
+    if (c === 'a1c') {
+      state.a1.b.c = 'example';
+    }
+  }, [c]);
+}`,
+
+    `
+function useProxyStateExample(a) {
+  const s = useSnapshot(a);
+
+  useEffect(() => {
+      a.a = 'example';
+  }, [s.a]);
+}`,
   ],
   invalid: [
     {
@@ -177,6 +196,31 @@ ruleTester.run('state-snapshot-rule', rule, {
 })
   `,
       errors: [COMPUTED_DECLARATION_ORDER],
+    },
+    {
+      code: `function Counter() {
+  const snapshot = useSnapshot(state)
+  useEffect(() => {
+    snapshot.count = randomValue + 1;
+  })
+  return (
+    <></>
+  )
+}`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      function useProxyStateExample(a) {
+        const s = useSnapshot(a);
+      
+        useEffect(() => {
+          if(s.a==="1"){
+            s.a = 'example';
+          }
+        }, [s.a]);
+      }`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
     },
   ],
 })
