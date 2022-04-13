@@ -70,6 +70,21 @@ function useProxyStateExample(a) {
       a.a = 'example';
   }, [s.a]);
 }`,
+    `
+const state = proxy({ count: 0 })
+
+      function App() {
+        const snap = useSnapshot(state)
+        const handleClick = useCallback(() => {
+          console.log(snap.count) // This is not recommended as it can be stale.
+        },[snap.count])
+        return (
+          <div>
+            {snap.count} <button onClick={handleClick}>click</button> 
+          </div>
+        )
+      }
+`,
   ],
   invalid: [
     {
@@ -219,6 +234,73 @@ function useProxyStateExample(a) {
             s.a = 'example';
           }
         }, [s.a]);
+      }`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      
+
+function App() {
+  const snap = useSnapshot(state)
+  const handleClick = () => {
+    console.log(snap.count) // This is not recommended as it can be stale.
+  }
+  return (
+    <div>
+       <button onClick={handleClick}>click</button> 
+    </div>
+  )
+}
+
+      `,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      const state = proxy({ count: 0 })
+
+      function App() {
+        const snap = useSnapshot(state)
+        const handleClick = useCallback(() => {
+          console.log(snap.count) // This is not recommended as it can be stale.
+        },[])
+        return (
+          <div>
+            {snap.count} <button onClick={handleClick}>click</button> 
+          </div>
+        )
+      }
+      `,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `const state = proxy({ count: 0 })
+
+      function App() {
+        const snap = useSnapshot(state)
+        const handleClick = useCallback(() => {
+          console.log(snap.count) // This is not recommended as it can be stale.
+        },[])
+        return (
+          <div>
+            {snap.count} <button onClick={handleClick}>click</button> 
+          </div>
+        )
+      }
+`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+      function useExample2(s) {
+        const {b: {c} } = useSnapshot(s.a1);
+      
+        useEffect(() => {
+          if (c === 'a1c') {
+            state.a1.b.c = 'example';
+          }
+        }, []);
       }`,
       errors: [SNAPSHOT_CALLBACK_MESSAGE],
     },

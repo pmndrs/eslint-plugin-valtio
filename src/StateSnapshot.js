@@ -90,8 +90,8 @@ export default {
 
         if (kind === 'snapshot') {
           // ignore the error if the snapshot
-          // is just being read
-          if (isReadOnly(node)) {
+          // is just being read in the hook and is a part of the dependency array
+          if (isReadOnly(node) && isInHookDeps(node)) {
             return
           }
 

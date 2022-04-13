@@ -144,3 +144,127 @@ export function returnFirstCallback(node) {
     return returnFirstCallback(node.parent)
   }
 }
+
+/**
+ * @description find if the node belongs to a hook or not
+ * @param {*} node - the node that might be inside a hook
+ * @param {boolean} returnHook - whether to return the
+ * resulting node or not
+ * @returns {* | boolean} - either true/false or the CallExpression node that belongs to the hook
+ */
+export function isInHook(node, returnHook = false) {
+  const hookDef = getNearestHook(node)
+  if (returnHook) {
+    return hookDef
+  }
+  return hookDef ? true : false
+}
+
+export function getNearestHook(node) {
+  if (!node.parent || !node.parent.type) return false
+
+  if (
+    functionTypes.includes(node.type) &&
+    node.parent.type == 'CallExpression' &&
+    node.parent.callee.type === 'Identifier' &&
+    (node.parent.callee.name === 'useEffect' ||
+      node.parent.callee.name === 'useCallback')
+  ) {
+    return node.parent
+  } else {
+    return getNearestHook(node.parent)
+  }
+}
+
+/**
+ * @description check if a node is part of the hook's dependencies,
+ * currently checks in useEffect and useCallback based on `getHookDeps`
+ * @param {*} node
+ * @returns {boolean}
+ */
+export function isInHookDeps(node) {
+  const hookNode = isInHook(node, true)
+  if (!hookNode) {
+    return false
+  }
+  const allDepExpressions = getHookDeps(hookNode)
+
+  let depPath
+  if (node.parent.type === 'MemberExpression') {
+    depPath = flattenMemberExpression(node.parent)
+  } else {
+    // TODO: need to make this an absolute check
+    // based on future reports as it currently
+    // assumes that the parent doesn't exist and it's just
+    // an Identifier node
+    depPath = (node.type === 'Identifier' && node.name) || false
+  }
+
+  if (!depPath) {
+    return false
+  }
+
+  const flatDepPaths = []
+  allDepExpressions.elements.forEach((exprNode) => {
+    let exprPath
+    if (exprNode.type === 'MemberExpression') {
+      exprPath = flattenMemberExpression(exprNode)
+    } else {
+      exprPath = exprNode.name
+    }
+    flatDepPaths.push(exprPath)
+  })
+
+  return flatDepPaths.indexOf(depPath) > -1
+}
+
+/**
+ * @description get array expression containing
+ * all dependencies of a given hook parent node (CallExpression)
+ * @param {*} node
+ * @returns {boolean|*} false or array expression
+ */
+export function getHookDeps(hookNode) {
+  if (!hookNode) {
+    return false
+  }
+
+  if (hookNode.type !== 'CallExpression') {
+    return false
+  }
+
+  if (
+    !(
+      hookNode.arguments.length == 2 &&
+      hookNode.arguments[1] &&
+      hookNode.arguments[1].type === 'ArrayExpression'
+    )
+  ) {
+    return false
+  }
+
+  return hookNode.arguments[1]
+}
+
+/**
+ * @description get the object path as a string for a given member expression
+ * @param {*} expr - Member Expression
+ * @param {*} key - the key across recursive functions
+ * @returns {string} either a object path as string
+ * or an empty string if nothing is found
+ */
+function flattenMemberExpression(expr, key = '') {
+  if (expr.type !== 'MemberExpression') {
+    return ''
+  }
+  if (expr.object.type === 'MemberExpression') {
+    return flatten(expr.object, '') + expr.property.name
+  }
+  if (expr.object.type == 'Identifier') {
+    let path = expr.object.name + '.' + expr.property.name
+    if (key) {
+      path += '.' + key
+    }
+    return path
+  }
+}
