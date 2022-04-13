@@ -1,28 +1,39 @@
 {
   "name": "eslint-plugin-valtio",
-  "private": true,
   "version": "0.4.2",
+  "private": true,
   "description": "An eslint plugin for better valtio experience",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin"
+  ],
+  "homepage": "https://github.com/pmndrs/eslint-plugin-valtio",
+  "bugs": {
+    "url": "https://github.com/pmndrs/eslint-plugin-valtio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pmndrs/eslint-plugin-valtio.git"
+  },
+  "license": "MIT",
+  "author": "M. Bagher Abiat",
+  "contributors": [
+    "Daishi Kato",
+    "Reaper"
+  ],
   "main": "index.js",
   "scripts": {
     "prebuild": "shx rm -rf dist",
     "build": "rollup -c",
     "postbuild": "yarn copy",
+    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\"",
     "eslint": "eslint --fix '{src,tests}/**/*.{js,jsx}'",
     "eslint:ci": "eslint '{src,tests}/**/*.{js,jsx}'",
+    "prepare": "husky install",
     "test": "jest",
-    "test:dev": "jest --watch --no-coverage",
     "test:coverage:watch": "jest --watch",
-    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\"",
-    "prepare": "husky install"
-  },
-  "prettier": {
-    "semi": false,
-    "trailingComma": "es5",
-    "singleQuote": true,
-    "bracketSameLine": true,
-    "tabWidth": 2,
-    "printWidth": 80
+    "test:dev": "jest --watch --no-coverage"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -30,47 +41,36 @@
     ],
     "*.js": "eslint --cache --fix"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/pmndrs/eslint-plugin-valtio.git"
-  },
-  "keywords": [
-    "eslint",
-    "eslintplugin",
-    "eslint-plugin"
-  ],
-  "author": "M. Bagher Abiat",
-  "contributors": [
-    "Daishi Kato",
-    "Reaper"
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/pmndrs/eslint-plugin-valtio/issues"
+  "prettier": {
+    "bracketSameLine": true,
+    "printWidth": 80,
+    "semi": false,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5"
   },
   "jest": {
-    "transform": {
-      "^.+\\.(t|j)sx?$": [
-        "@swc/jest"
-      ]
-    },
-    "modulePathIgnorePatterns": [
-      "dist"
-    ],
-    "testRegex": "test.(js|ts|tsx)$",
-    "coverageDirectory": "./coverage/",
     "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,ts,tsx}",
+      "tests/**/*.{js,ts,tsx}"
+    ],
+    "coverageDirectory": "./coverage/",
     "coverageReporters": [
       "json",
       "text",
       "text-summary"
     ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,ts,tsx}",
-      "tests/**/*.{js,ts,tsx}"
-    ]
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
+    "testRegex": "test.(js|ts|tsx)$",
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest"
+      ]
+    }
   },
-  "homepage": "https://github.com/pmndrs/eslint-plugin-valtio",
   "devDependencies": {
     "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
@@ -93,5 +93,8 @@
     "prettier": "^2.6.2",
     "rollup": "^2.70.1",
     "shx": "^0.3.4"
+  },
+  "engines": {
+    "node": ">=12.7.0"
   }
 }
