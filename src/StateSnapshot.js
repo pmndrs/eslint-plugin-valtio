@@ -114,6 +114,7 @@ function outerMemberExpression(node) {
   }
   return outerMemberExpression(node.parent)
 }
+// eslint-disable-next-line
 function outerObjectExpression(node) {
   if (node.parent.type !== 'ObjectExpression') {
     return node
