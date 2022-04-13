@@ -1,6 +1,7 @@
 import {
   callExpressions,
   functionTypes,
+  isInHookDeps,
   isInSomething,
   isReadOnly,
 } from './lib/utils'
