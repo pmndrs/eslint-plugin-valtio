@@ -70,21 +70,19 @@ function useProxyStateExample(a) {
       a.a = 'example';
   }, [s.a]);
 }`,
-    `
-const state = proxy({ count: 0 })
-
-      function App() {
-        const snap = useSnapshot(state)
-        const handleClick = useCallback(() => {
-          console.log(snap.count) // This is not recommended as it can be stale.
-        },[snap.count])
-        return (
-          <div>
-            {snap.count} <button onClick={handleClick}>click</button> 
-          </div>
-        )
-      }
-`,
+    `const state = proxy({ count: 0 });
+    function App() {
+      const snap = useSnapshot(state);
+      const handleClick = useCallback(() => {
+        console.log(snap.count);
+      }, [snap.count]);
+      return (
+        <div>
+          {snap.count} <button onClick={handleClick}>click</button>
+        </div>
+      );
+    }
+    `,
   ],
   invalid: [
     {
