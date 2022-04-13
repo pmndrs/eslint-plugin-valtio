@@ -1,0 +1,12 @@
+{
+  "jsc": {
+    "externalHelpers": false,
+    "parser": {
+      "syntax": "ecmascript",
+      "jsx": true
+    }
+  },
+  "module": {
+    "type": "commonjs"
+  }
+}

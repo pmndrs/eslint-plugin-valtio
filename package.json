@@ -13,7 +13,8 @@
     "test": "jest",
     "test:dev": "jest --watch --no-coverage",
     "test:coverage:watch": "jest --watch",
-    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\""
+    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\"",
+    "prepare": "husky install"
   },
   "prettier": {
     "semi": false,
@@ -26,7 +27,8 @@
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write"
-    ]
+    ],
+    "*.js": "eslint --cache --fix"
   },
   "repository": {
     "type": "git",
@@ -46,24 +48,48 @@
   "bugs": {
     "url": "https://github.com/pmndrs/eslint-plugin-valtio/issues"
   },
+  "jest": {
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest"
+      ]
+    },
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
+    "testRegex": "test.(js|ts|tsx)$",
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "text",
+      "text-summary"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,ts,tsx}",
+      "tests/**/*.{js,ts,tsx}"
+    ]
+  },
   "homepage": "https://github.com/pmndrs/eslint-plugin-valtio",
   "devDependencies": {
     "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.2.0",
+    "@swc/core": "^1.2.164",
+    "@swc/jest": "^0.2.20",
     "babel-eslint": "^10.1.0",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.13.0",
+    "eslint": "^7",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^26.1.4",
     "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
-    "jest": "^27.5.1",
+    "husky": ">=7",
+    "jest": "^26.5.2",
     "json": "^11.0.0",
-    "lint-staged": "^12.3.7",
+    "lint-staged": ">=10",
     "prettier": "^2.6.2",
     "rollup": "^2.70.1",
     "shx": "^0.3.4"
