@@ -316,8 +316,10 @@ function isInCallback(node) {
   if (!node.parent || !node.parent.type) return false
 
   if (
-    callExpressions.includes(node.parent.type) &&
-    functionTypes.includes(node.type)
+    (callExpressions.includes(node.parent.type) &&
+      functionTypes.includes(node.type)) ||
+    (['VariableDeclarator'].includes(node.parent.type) &&
+      functionTypes.includes(node.type))
   ) {
     return true
   } else {
