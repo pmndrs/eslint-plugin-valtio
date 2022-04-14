@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",
+    "@babel/eslint-parser": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.2.0",

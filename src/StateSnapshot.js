@@ -67,7 +67,7 @@ export default {
             ((outerMemberExpression(node).property === node &&
               isUsedInUseProxy(outerMemberExpression(node), scope)) ||
               (node.parent.object === node &&
-                outerMemberExpression(node).property.type === 'Literal' &&
+                isJSXLiteral(node) &&
                 isUsedInUseProxy(outerMemberExpression(node), scope))))
         ) {
           return context.report({
@@ -262,8 +262,10 @@ function isSameMemmberExpression(first, second) {
     first.property.value === second.property.value
   ) {
     if (
-      first.object._babelType === 'MemberExpression' &&
-      second.object._babelType === 'MemberExpression'
+      (first.object._babelType === 'MemberExpression' &&
+        second.object._babelType === 'MemberExpression') ||
+      (first.object.type === 'MemberExpression' &&
+        second.object.type === 'MemberExpression')
     ) {
       return isSameMemmberExpression(first.object, second.object)
     } else if (
@@ -292,12 +294,18 @@ function isUsedInUseProxy(node, scope) {
       (init.parent._babelType === 'CallExpression' &&
         init.parent.callee.name === 'useSnapshot') ||
       (init._babelType === 'CallExpression' &&
-        init.callee.name === 'useSnapshot')
+        init.callee.name === 'useSnapshot') ||
+      (init.parent.type === 'CallExpression' &&
+        init.parent.callee.name === 'useSnapshot') ||
+      (init.type === 'CallExpression' && init.callee.name === 'useSnapshot')
     ) {
       if (
-        init.arguments[0] &&
-        init.arguments[0]._babelType === 'MemberExpression' &&
-        node._babelType === 'MemberExpression'
+        (init.arguments[0] &&
+          init.arguments[0]._babelType === 'MemberExpression' &&
+          node._babelType === 'MemberExpression') ||
+        (init.arguments[0] &&
+          init.arguments[0].type === 'MemberExpression' &&
+          node.type === 'MemberExpression')
       ) {
         return (isUsed = isSameMemmberExpression(node, init.arguments[0]))
       } else if (
@@ -338,4 +346,13 @@ function isInRender(node) {
   } else {
     return isInRender(node.parent)
   }
+}
+
+function isJSXLiteral(node) {
+  const memberExpression = outerMemberExpression(node)
+  // backward support + handling for espree v6 + babel
+  return (
+    memberExpression.property.type === 'Literal' ||
+    memberExpression.property.type === 'NumericLiteral'
+  )
 }
