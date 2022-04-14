@@ -67,7 +67,7 @@ export default {
             ((outerMemberExpression(node).property === node &&
               isUsedInUseProxy(outerMemberExpression(node), scope)) ||
               (node.parent.object === node &&
-                isJSXLiteral(node) &&
+                isLiteral(node) &&
                 isUsedInUseProxy(outerMemberExpression(node), scope))))
         ) {
           return context.report({
@@ -348,7 +348,7 @@ function isInRender(node) {
   }
 }
 
-function isJSXLiteral(node) {
+function isLiteral(node) {
   const memberExpression = outerMemberExpression(node)
   // backward support + handling for espree v6 + babel
   return (
