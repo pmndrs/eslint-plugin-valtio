@@ -258,7 +258,7 @@ function flattenMemberExpression(expr, key = '') {
     return ''
   }
   if (expr.object.type === 'MemberExpression') {
-    return flatten(expr.object, '') + expr.property.name
+    return flattenMemberExpression(expr.object, '') + expr.property.name
   }
   if (expr.object.type == 'Identifier') {
     let path = expr.object.name + '.' + expr.property.name

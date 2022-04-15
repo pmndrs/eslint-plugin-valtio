@@ -1,4 +1,5 @@
 {
   "packages": ["dist"],
-  "sandboxes": ["vanilla", "new"]
+  "sandboxes": ["vanilla", "new"],
+  "node": "12"
 }

@@ -4,35 +4,37 @@
   "version": "0.4.2",
   "description": "An eslint plugin for better valtio experience",
   "main": "index.js",
+  "files": [
+    "**"
+  ],
   "scripts": {
+    "prepare": "husky install",
     "prebuild": "shx rm -rf dist",
     "build": "rollup -c",
     "postbuild": "yarn copy",
-    "eslint": "eslint --fix '{src,tests}/**/*.{js,ts,jsx,tsx}'",
-    "eslint:ci": "eslint '{src,tests}/**/*.{js,ts,jsx,tsx}'",
-    "prepare": "yarn build",
+    "eslint": "eslint --fix '{src,tests}/**/*.{js,jsx}'",
+    "eslint:ci": "eslint '{src,tests}/**/*.{js,jsx}'",
     "test": "jest",
     "test:dev": "jest --watch --no-coverage",
     "test:coverage:watch": "jest --watch",
-    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.husky=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\""
+    "copy": "copyfiles -f package.json README.md LICENSE dist && json -I -f dist/package.json -e \"this.private=false; this.devDependencies=undefined; this.optionalDependencies=undefined; this.scripts=undefined; this.prettier=undefined; this.jest=undefined; this['lint-staged']=undefined;\""
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "engines": {
+    "node": ">=12.7.0"
   },
   "prettier": {
+    "bracketSameLine": true,
+    "printWidth": 80,
     "semi": false,
-    "trailingComma": "es5",
     "singleQuote": true,
-    "jsxBracketSameLine": true,
     "tabWidth": 2,
-    "printWidth": 80
+    "trailingComma": "es5"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write"
-    ]
+    ],
+    "*.js": "eslint --cache --fix"
   },
   "repository": {
     "type": "git",
@@ -53,25 +55,50 @@
     "url": "https://github.com/pmndrs/eslint-plugin-valtio/issues"
   },
   "homepage": "https://github.com/pmndrs/eslint-plugin-valtio",
+  "jest": {
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest"
+      ]
+    },
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
+    "testRegex": "test.(js|ts|tsx)$",
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "coverageReporters": [
+      "json",
+      "html",
+      "text",
+      "text-summary"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,ts,tsx}",
+      "tests/**/*.{js,ts,tsx}"
+    ]
+  },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/preset-env": "^7.13.8",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-node-resolve": "^11.2.0",
-    "babel-eslint": "^10.1.0",
+    "@babel/core": "^7.17.9",
+    "@babel/eslint-parser": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-node-resolve": "^13.2.0",
+    "@swc/core": "^1.2.164",
+    "@swc/jest": "^0.2.20",
     "copyfiles": "^2.4.1",
-    "eslint": "^7.21.0",
-    "eslint-config-prettier": "^8.1.0",
+    "eslint": "^7",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.1.5",
-    "eslint-plugin-prettier": "^3.3.1",
-    "husky": "^4.3.8",
-    "jest": "^26.6.3",
-    "json": "^10.0.0",
-    "lint-staged": "^10.5.4",
-    "prettier": "^2.2.1",
-    "rollup": "^2.40.0",
-    "shx": "^0.3.3"
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.1.4",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": ">=7",
+    "jest": "^26.5.2",
+    "json": "^11.0.0",
+    "lint-staged": ">=10",
+    "prettier": "^2.6.2",
+    "rollup": "^2.70.1",
+    "shx": "^0.3.4"
   }
 }

@@ -1,9 +1,9 @@
 import { RuleTester } from 'eslint'
 import rule, { MESSAGE_THIS_IN_PROXY } from '../src/AvoidThisInProxy'
+import { getParserConfig } from './parser-config'
 
 const ruleTester = new RuleTester({
-  parserOptions: { ecmaVersion: 6 },
-  parser: require.resolve('babel-eslint'),
+  ...getParserConfig(),
 })
 
 const testCases = {
