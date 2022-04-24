@@ -374,13 +374,7 @@ function isInJSXContainer(node) {
 function isInDeclaration(node) {
   const _parentDeclaration = getParentOfNodeType(node, 'VariableDeclarator')
 
-  if (
-    _parentDeclaration &&
-    _parentDeclaration.init &&
-    _parentDeclaration.init.callee &&
-    _parentDeclaration.init.callee.name &&
-    _parentDeclaration.init.callee.name === 'useSnapshot'
-  ) {
+  if (_parentDeclaration?.init?.callee?.name === 'useSnapshot') {
     return true
   }
 
