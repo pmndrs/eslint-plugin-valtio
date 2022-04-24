@@ -83,6 +83,22 @@ ruleTester.run('state-snapshot-rule', rule, {
       );
     }
     `,
+    `
+    const DirectReadComponent = () => {
+      const debounceSnap = useSnapshot(state);
+      return <div>{debounceSnap}</div>;
+    };
+    `,
+    `
+    const ObjectPatternReadOne = () => {
+      const {b: {c} } = useSnapshot(state);
+      return <div>{c}</div>;
+    };`,
+    `
+    const ObjectPatternReadTwo = () => {
+      const {c} = useSnapshot(state);
+      return <div>{c}</div>;
+    };`,
   ],
   invalid: [
     {

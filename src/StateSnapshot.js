@@ -1,6 +1,7 @@
 import {
   callExpressions,
   functionTypes,
+  getParentOfNodeType,
   isInHookDeps,
   isInSomething,
   isReadOnly,
@@ -92,7 +93,13 @@ export default {
         if (kind === 'snapshot') {
           // ignore the error if the snapshot
           // is just being read in the hook and is a part of the dependency array
-          if (isReadOnly(node) && isInHookDeps(node)) {
+
+          if (
+            isReadOnly(node) &&
+            (isInHookDeps(node) ||
+              isInJSXContainer(node) ||
+              isInDeclaration(node))
+          ) {
             return
           }
 
@@ -355,4 +362,21 @@ function isLiteral(node) {
     memberExpression.property.type === 'Literal' ||
     memberExpression.property.type === 'NumericLiteral'
   )
+}
+
+function isInJSXContainer(node) {
+  return (
+    isInSomething(node, 'JSXExpressionContainer') ||
+    isInSomething(node, 'JSXElement')
+  )
+}
+
+function isInDeclaration(node) {
+  const _parentDeclaration = getParentOfNodeType(node, 'VariableDeclarator')
+
+  if (_parentDeclaration?.init?.callee?.name === 'useSnapshot') {
+    return true
+  }
+
+  return false
 }
