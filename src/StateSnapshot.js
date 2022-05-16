@@ -307,7 +307,8 @@ function isUsedInUseProxy(node, scope) {
       (init.type === 'CallExpression' && init.callee.name === 'useSnapshot')
     ) {
       if (
-        (init.arguments[0] &&
+        (init.arguments.length > 0 &&
+          init.arguments[0] &&
           init.arguments[0]._babelType === 'MemberExpression' &&
           node._babelType === 'MemberExpression') ||
         (init.arguments[0] &&
