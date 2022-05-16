@@ -317,5 +317,18 @@ ruleTester.run('state-snapshot-rule', rule, {
           }`,
       errors: [SNAPSHOT_CALLBACK_MESSAGE],
     },
+    {
+      code: `
+          function useExample2(s) {
+            const {b: {c} } = useSnapshot(s.a1);
+
+            useEffect(() => {
+              if (c === 'a1c') {
+                state.a1.b.c = 'example';
+              }
+            });
+          }`,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
   ],
 })
