@@ -131,7 +131,7 @@ const state = snapshot(
   proxy({
     count: 0,
     inc() {
-      ++this.count; // won't work since the params are now forzen since you are in a snapshot.
+      ++this.count; // won't work since the params are now frozen since you are in a snapshot.
     },
   })
 );
