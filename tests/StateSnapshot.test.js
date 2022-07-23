@@ -150,6 +150,13 @@ const App=()=>{
   );
 }
 `,
+    `
+const useDoubled = ({ state }) => {
+  const snap = useSnapshot(state)
+  const {doubled} = {doubled:snap.count*2};
+  return doubled 
+}
+`,
   ],
   invalid: [
     {
