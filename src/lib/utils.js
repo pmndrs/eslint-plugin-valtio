@@ -205,7 +205,10 @@ export function isInHookDeps(node) {
   }
 
   const flatDepPaths = []
-  allDepExpressions.elements.forEach((exprNode) => {
+
+  // Handle cases where the elements might not exist at all ,
+  // aka useEffect(()=>{}) without a dep array
+  ;(allDepExpressions.elements || []).forEach((exprNode) => {
     let exprPath
     if (exprNode.type === 'MemberExpression') {
       exprPath = flattenMemberExpression(exprNode)
