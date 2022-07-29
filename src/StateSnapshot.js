@@ -1,8 +1,10 @@
 import {
   callExpressions,
   functionTypes,
-  getParentOfNodeType,
-  isInHookDeps,
+  isDepthSameAsRootComponent,
+  isInCustomHookDef,
+  isInReactHookDeps,
+  isInReactHooks,
   isInSomething,
   isReadOnly,
 } from './lib/utils'
@@ -79,8 +81,9 @@ export default {
         if (
           node.parent.type === 'MemberExpression' &&
           node.parent.property === node
-        )
+        ) {
           return
+        }
 
         const kind = which(node.name, scope)
         if (kind === 'state' && isInRender(node)) {
@@ -94,16 +97,35 @@ export default {
           // ignore the error if the snapshot
           // is just being read in the hook and is a part of the dependency array
 
-          if (
-            isReadOnly(node) &&
-            (isInHookDeps(node) ||
+          // Valids
+          // - allowed to read at root level for computation (new hook / render level defs) , basically anything defined at the root of the component definition
+          // [x] allowed to read in a useEffect and useCallback if added in deps
+
+          // Invalids
+          // [x] if being used in a callback that isn't useEffect or useCallback
+
+          if (isReadOnly(node)) {
+            if (isInReactHooks(node) && !isInReactHookDeps(node)) {
+              return context.report({
+                node,
+                message: SNAPSHOT_CALLBACK_MESSAGE,
+              })
+            }
+            if (
+              isDepthSameAsRootComponent(node) ||
               isInJSXContainer(node) ||
-              isInDeclaration(node))
-          ) {
-            return
+              isInCustomHookDef(node)
+            ) {
+              return
+            }
+          } else {
+            return context.report({
+              node,
+              message: SNAPSHOT_CALLBACK_MESSAGE,
+            })
           }
 
-          if (isInCallback(node)) {
+          if (isInCallback(node) && !isInReactHooks(node)) {
             return context.report({
               node,
               message: SNAPSHOT_CALLBACK_MESSAGE,
@@ -218,8 +240,9 @@ function isComputedIdentifier(node, scope) {
     }
   })
 
-  if (!isIt && scope.upper)
+  if (!isIt && scope.upper) {
     return (isIt = isComputedIdentifier(node, scope.upper))
+  }
 
   return isIt
 }
@@ -325,8 +348,9 @@ function isUsedInUseProxy(node, scope) {
       }
     }
   })
-  if (!isUsed && scope.upper)
+  if (!isUsed && scope.upper) {
     return (isUsed = isUsedInUseProxy(node, scope.upper))
+  }
   return isUsed
 }
 
@@ -372,12 +396,12 @@ function isInJSXContainer(node) {
   )
 }
 
-function isInDeclaration(node) {
-  const _parentDeclaration = getParentOfNodeType(node, 'VariableDeclarator')
+// function isInDeclaration(node) {
+//   const _parentDeclaration = getParentOfNodeType(node, 'VariableDeclarator')
 
-  if (_parentDeclaration?.init?.callee?.name === 'useSnapshot') {
-    return true
-  }
+//   if (_parentDeclaration?.init?.callee?.name === 'useSnapshot') {
+//     return true
+//   }
 
-  return false
-}
+//   return false
+// }

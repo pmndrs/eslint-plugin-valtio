@@ -16,7 +16,6 @@ export const writingOpExpressionTypes = ['UpdateExpression']
  *
  *  isInSomething(thisNode,"FunctionExpression") // true
  *  isInSomething(thisNode,"ExpressionStatement") // false
- *
  */
 export function isInSomething(node, thing) {
   if (node.parent && node.parent.type !== thing) {
@@ -30,10 +29,9 @@ export function isInSomething(node, thing) {
 /**
  * @param {any} node ASTNode
  *
- *
  * @example
  *
- *const stateOne = proxy({
+ * const stateOne = proxy({
  * count: 0,
  * inc: function () {
  *   ++state.count //<== taking node from here
@@ -41,7 +39,6 @@ export function isInSomething(node, thing) {
  * })
  *
  * nearestCalleeName(node) //=> "proxy" //<= proxy is the nearest callee
- *
  */
 export function nearestCalleeName(node) {
   if (!(node && node.parent)) {
@@ -81,9 +78,12 @@ export function nearestCalleeName(node) {
  *
  *  getParentOfNodeType(thisNode,"FunctionExpression") // ASTNode.type: "FunctionExpression"
  *  getParentOfNodeType(thisNode,"ExpressionStatement") // null
- *
  */
 export function getParentOfNodeType(node, nodeType) {
+  if (!node?.parent) {
+    return null
+  }
+
   if (node.parent && node.parent.type !== nodeType) {
     return getParentOfNodeType(node.parent, nodeType)
   } else if (node.parent && node.parent.type === nodeType) {
@@ -111,11 +111,14 @@ export function isReadOnly(node) {
     return isReadOnly(node.parent)
   }
 
+  if (node.parent.type === 'CallExpression') {
+    return true
+  }
+
   return true
 }
 
 /**
- *
  * @param {*} node
  * @returns {boolean} true if the node is on the left
  * of an assignment expression aka being modified
@@ -152,7 +155,7 @@ export function returnFirstCallback(node) {
  * resulting node or not
  * @returns {* | boolean} - either true/false or the CallExpression node that belongs to the hook
  */
-export function isInHook(node, returnHook = false) {
+export function isInReactHooks(node, returnHook = false) {
   const hookDef = getNearestHook(node)
   if (returnHook) {
     return hookDef
@@ -160,20 +163,35 @@ export function isInHook(node, returnHook = false) {
   return hookDef ? true : false
 }
 
+function isReactPrimitive(node) {
+  if (
+    node.type === 'Identifier' &&
+    (node.name === 'useEffect' || node.name === 'useCallback')
+  ) {
+    return true
+  }
+
+  if (node.type === 'MemberExpression') {
+    const flatExpr = flattenMemberExpression(node)
+    return flatExpr.endsWith('useEffect') || flatExpr.endsWith('useCallback')
+  }
+
+  return false
+}
+
 export function getNearestHook(node) {
   if (!node.parent || !node.parent.type) return false
 
-  if (
-    functionTypes.includes(node.type) &&
-    node.parent.type == 'CallExpression' &&
-    node.parent.callee.type === 'Identifier' &&
-    (node.parent.callee.name === 'useEffect' ||
-      node.parent.callee.name === 'useCallback')
-  ) {
-    return node.parent
-  } else {
-    return getNearestHook(node.parent)
+  const parentCaller = getParentOfNodeType(node, 'CallExpression')
+  if (!parentCaller) {
+    return false
   }
+
+  if (!isReactPrimitive(parentCaller.callee)) {
+    return getNearestHook(parentCaller)
+  }
+
+  return parentCaller
 }
 
 /**
@@ -182,8 +200,8 @@ export function getNearestHook(node) {
  * @param {*} node
  * @returns {boolean}
  */
-export function isInHookDeps(node) {
-  const hookNode = isInHook(node, true)
+export function isInReactHookDeps(node) {
+  const hookNode = isInReactHooks(node, true)
   if (!hookNode) {
     return false
   }
@@ -270,4 +288,56 @@ function flattenMemberExpression(expr, key = '') {
     }
     return path
   }
+}
+
+export function isDepthSameAsRootComponent(node) {
+  const varDef = getParentOfNodeType(node, 'VariableDeclaration')
+  const parentNormalFunc = getParentOfNodeType(varDef, 'FunctionDeclaration')
+  const parentArrFunc = getParentOfNodeType(varDef, 'ArrowFunctionExpression')
+
+  const parentFunc = parentNormalFunc || parentArrFunc
+  if (!parentFunc) {
+    return false
+  }
+
+  if (
+    parentFunc?.parent.type === 'VariableDeclarator' &&
+    parentFunc?.parent.parent.type === 'VariableDeclaration' &&
+    parentFunc?.parent.parent.parent.type === 'Program'
+  ) {
+    return true
+  }
+}
+
+export function isInCustomHookDef(node) {
+  const nearestReturn = getParentOfNodeType(node, 'ReturnStatement')
+  const returnInBlock = getParentOfNodeType(nearestReturn, 'BlockStatement')
+  const normalFuncDef = getParentOfNodeType(
+    returnInBlock,
+    'ArrowFunctionExpression'
+  )
+  const arrowFuncDef = getParentOfNodeType(returnInBlock, 'FunctionExpression')
+
+  const nearestFuncDef = normalFuncDef || arrowFuncDef || false
+
+  if (!nearestFuncDef) {
+    return false
+  }
+
+  const varDeclaratorOfFunc = getParentOfNodeType(
+    nearestFuncDef,
+    'VariableDeclarator'
+  )
+  const varDefOfFunc = getParentOfNodeType(
+    varDeclaratorOfFunc,
+    'VariableDeclaration'
+  )
+
+  const varDefOnRoot = varDefOfFunc.parent?.type === 'Program' || false
+
+  return (
+    varDefOnRoot &&
+    varDeclaratorOfFunc.id?.type === 'Identifier' &&
+    varDeclaratorOfFunc.id?.name.startsWith('use')
+  )
 }
