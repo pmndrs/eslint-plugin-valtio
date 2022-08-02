@@ -288,6 +288,7 @@ function flattenMemberExpression(expr, key = '') {
     }
     return path
   }
+  return ''
 }
 
 export function isDepthSameAsRootComponent(node) {
