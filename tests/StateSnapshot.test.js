@@ -157,6 +157,38 @@ const useDoubled = ({ state }) => {
   return doubled 
 }
 `,
+    `
+export const Workspace = () => {
+  const [loading, setLoading] = useState(false);
+
+  const snap = useSnapshot(eventsStore);
+
+  return (
+    <>
+      {(loading || !snap.initialized) && <Loader text="Loading..." />}
+      {snap.saving && <Loader text="Saving..." />}
+      {snap.packing && <Loader text="Packing..." />}
+      {snap.exporting && <Loader text="Exporting..." />}
+    </>
+  );
+};
+`,
+    `
+export function Workspace(){
+  const [loading, setLoading] = useState(false);
+
+  const snap = useSnapshot(eventsStore);
+
+  return (
+    <>
+      {(loading || !snap.initialized) && <Loader text="Loading..." />}
+      {snap.saving && <Loader text="Saving..." />}
+      {snap.packing && <Loader text="Packing..." />}
+      {snap.exporting && <Loader text="Exporting..." />}
+    </>
+  );
+};
+`,
   ],
   invalid: [
     {

@@ -1,6 +1,10 @@
 export const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 export const writingOpExpressionTypes = ['UpdateExpression']
+export const exportDeclarations = [
+  'ExportDefaultDeclaration',
+  'ExportNamedDeclaration',
+]
 
 /**
  * @param {any} node ASTNode to check
@@ -301,13 +305,23 @@ export function isDepthSameAsRootComponent(node) {
     return false
   }
 
+  // check if the parent of the func is a var declaration
+  // if yes then check if it's in an export group or
+  // directly at the program level
+  // making sure that we are the root depth of the file
+  const isParentVDeclarationGroup =
+    parentFunc?.parent?.type === 'VariableDeclarator' &&
+    parentFunc?.parent?.parent?.type === 'VariableDeclaration'
+
   if (
-    parentFunc?.parent.type === 'VariableDeclarator' &&
-    parentFunc?.parent.parent.type === 'VariableDeclaration' &&
-    parentFunc?.parent.parent.parent.type === 'Program'
+    isParentVDeclarationGroup &&
+    (parentFunc?.parent?.parent?.parent?.type === 'Program' ||
+      exportDeclarations.indexOf(parentFunc?.parent?.parent?.parent?.type) > -1)
   ) {
     return true
   }
+
+  return false
 }
 
 export function isInCustomHookDef(node) {
