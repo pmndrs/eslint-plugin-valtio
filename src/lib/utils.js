@@ -306,26 +306,10 @@ export function isDepthSameAsRootComponent(node) {
     return false
   }
 
-  // check if the parent is a callexpression
-  // and if yes, check if it's either a forwardRef
-  // or memo from react
-  if (parentFunc.parent.type === 'CallExpression') {
-    const validCalleeNames = ['memo', 'forwardRef']
-    const callee = parentFunc.parent.callee
-
-    // check if identifier name is one of the valid ones
-    if (validCalleeNames.indexOf(callee.name) > -1) {
-      return true
-    }
-
-    // check if member expression property is react.<name>
-    if (
-      callee.type === 'MemberExpression' &&
-      callee.object.name === 'React' &&
-      validCalleeNames.indexOf(callee.property.name) > -1
-    ) {
-      return true
-    }
+  // if wrapped by forwardRef or memo then
+  // nullify the call and consider it to be root depth
+  if (isInRefOrMemo(parentFunc.parent)) {
+    return true
   }
 
   // check if the parent of the func is a var declaration
@@ -378,4 +362,28 @@ export function isInCustomHookDef(node) {
     varDeclaratorOfFunc.id?.type === 'Identifier' &&
     varDeclaratorOfFunc.id?.name.startsWith('use')
   )
+}
+
+function isInRefOrMemo(node) {
+  const validCalleeNames = ['memo', 'forwardRef']
+  // check if the parent is a callexpression
+  // and if yes, check if it's either a forwardRef
+  // or memo from react
+  if (node.type === 'CallExpression') {
+    const callee = node.callee
+
+    // check if identifier name is one of the valid ones
+    if (validCalleeNames.indexOf(callee.name) > -1) {
+      return true
+    }
+
+    // check if member expression property is react.<name>
+    if (
+      callee.type === 'MemberExpression' &&
+      callee.object.name === 'React' &&
+      validCalleeNames.indexOf(callee.property.name) > -1
+    ) {
+      return true
+    }
+  }
 }
