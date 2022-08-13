@@ -1,6 +1,10 @@
 export const callExpressions = ['JSXExpressionContainer', 'CallExpression']
 export const functionTypes = ['ArrowFunctionExpression', 'FunctionExpression']
 export const writingOpExpressionTypes = ['UpdateExpression']
+export const exportDeclarations = [
+  'ExportDefaultDeclaration',
+  'ExportNamedDeclaration',
+]
 
 /**
  * @param {any} node ASTNode to check
@@ -297,17 +301,34 @@ export function isDepthSameAsRootComponent(node) {
   const parentArrFunc = getParentOfNodeType(varDef, 'ArrowFunctionExpression')
 
   const parentFunc = parentNormalFunc || parentArrFunc
+
   if (!parentFunc) {
     return false
   }
 
+  // if wrapped by forwardRef or memo then
+  // nullify the call and consider it to be root depth
+  if (isInRefOrMemo(parentFunc.parent)) {
+    return true
+  }
+
+  // check if the parent of the func is a var declaration
+  // if yes then check if it's in an export group or
+  // directly at the program level
+  // making sure that we are the root depth of the file
+  const isParentVDeclarationGroup =
+    parentFunc?.parent?.type === 'VariableDeclarator' &&
+    parentFunc?.parent?.parent?.type === 'VariableDeclaration'
+
   if (
-    parentFunc?.parent.type === 'VariableDeclarator' &&
-    parentFunc?.parent.parent.type === 'VariableDeclaration' &&
-    parentFunc?.parent.parent.parent.type === 'Program'
+    isParentVDeclarationGroup &&
+    (parentFunc?.parent?.parent?.parent?.type === 'Program' ||
+      exportDeclarations.indexOf(parentFunc?.parent?.parent?.parent?.type) > -1)
   ) {
     return true
   }
+
+  return false
 }
 
 export function isInCustomHookDef(node) {
@@ -341,4 +362,28 @@ export function isInCustomHookDef(node) {
     varDeclaratorOfFunc.id?.type === 'Identifier' &&
     varDeclaratorOfFunc.id?.name.startsWith('use')
   )
+}
+
+function isInRefOrMemo(node) {
+  const validCalleeNames = ['memo', 'forwardRef']
+  // check if the parent is a callexpression
+  // and if yes, check if it's either a forwardRef
+  // or memo from react
+  if (node.type === 'CallExpression') {
+    const callee = node.callee
+
+    // check if identifier name is one of the valid ones
+    if (validCalleeNames.indexOf(callee.name) > -1) {
+      return true
+    }
+
+    // check if member expression property is react.<name>
+    if (
+      callee.type === 'MemberExpression' &&
+      callee.object.name === 'React' &&
+      validCalleeNames.indexOf(callee.property.name) > -1
+    ) {
+      return true
+    }
+  }
 }

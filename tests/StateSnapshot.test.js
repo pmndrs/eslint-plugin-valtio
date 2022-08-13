@@ -14,149 +14,210 @@ const ruleTester = new RuleTester({
 ruleTester.run('state-snapshot-rule', rule, {
   valid: [
     `
-         const state = proxy({ count: 0 })
-         state.count += 1
-         `,
-    `
-         const state = proxy({ count: 0})
-         function Counter() {
-           return (
-             <div>
-               <button onClick={() => ++state.count}>+1</button>
-             </div>
-           )
-         }
-         `,
-    `
-         function Counter() {
-           const snapshot = useSnapshot(state)
-           const { count } = snapshot
-           return (
-             <div>{count} {snapshot.count}</div>
-           )
-         }
-         `,
-    `
-         function Counter() {
-           const { count } = useSnapshot(state)
-           return <div>{count}</div>
-         }
-         `,
-    `
-         function Counter() {
-           const snap = useSnapshot(state)
-           useEffect(() => {
+             const state = proxy({ count: 0 })
              state.count += 1
-           }, [])
-           return <div>{snap.foo}</div>
-         }
-         `,
+             `,
     `
-       function useExample2(s) {
-         const {b: {c} } = useSnapshot(s.a1);
-    
-         useEffect(() => {
-           if (c === 'a1c') {
-             state.a1.b.c = 'example';
-           }
-         }, [c]);
-       }`,
+             const state = proxy({ count: 0})
+             function Counter() {
+               return (
+                 <div>
+                   <button onClick={() => ++state.count}>+1</button>
+                 </div>
+               )
+             }
+             `,
+    `
+             function Counter() {
+               const snapshot = useSnapshot(state)
+               const { count } = snapshot
+               return (
+                 <div>{count} {snapshot.count}</div>
+               )
+             }
+             `,
+    `
+             function Counter() {
+               const { count } = useSnapshot(state)
+               return <div>{count}</div>
+             }
+             `,
+    `
+             function Counter() {
+               const snap = useSnapshot(state)
+               useEffect(() => {
+                 state.count += 1
+               }, [])
+               return <div>{snap.foo}</div>
+             }
+             `,
+    `
+           function useExample2(s) {
+             const {b: {c} } = useSnapshot(s.a1);
+
+             useEffect(() => {
+               if (c === 'a1c') {
+                 state.a1.b.c = 'example';
+               }
+             }, [c]);
+           }`,
 
     `
-       function useProxyStateExample(a) {
-         const s = useSnapshot(a);
-    
-         useEffect(() => {
-             a.a = 'example';
-         }, [s.a]);
-       }`,
+           function useProxyStateExample(a) {
+             const s = useSnapshot(a);
+
+             useEffect(() => {
+                 a.a = 'example';
+             }, [s.a]);
+           }`,
     `const state = proxy({ count: 0 });
-       function App() {
-         const snap = useSnapshot(state);
-         const handleClick = useCallback(() => {
-           console.log(snap.count);
-         }, [snap.count]);
-         return (
-           <div>
-             {snap.count} <button onClick={handleClick}>click</button>
-           </div>
-         );
-       }
-       `,
+           function App() {
+             const snap = useSnapshot(state);
+             const handleClick = useCallback(() => {
+               console.log(snap.count);
+             }, [snap.count]);
+             return (
+               <div>
+                 {snap.count} <button onClick={handleClick}>click</button>
+               </div>
+             );
+           }
+           `,
     `
-       const DirectReadComponent = () => {
-         const debounceSnap = useSnapshot(state);
-         return <div>{debounceSnap}</div>;
-       };
-       `,
+           const DirectReadComponent = () => {
+             const debounceSnap = useSnapshot(state);
+             return <div>{debounceSnap}</div>;
+           };
+           `,
     `
-       const ObjectPatternReadOne = () => {
-         const {b: {c} } = useSnapshot(state);
-         return <div>{c}</div>;
-       };`,
+           const ObjectPatternReadOne = () => {
+             const {b: {c} } = useSnapshot(state);
+             return <div>{c}</div>;
+           };`,
     `
-       const ObjectPatternReadTwo = () => {
-         const {c} = useSnapshot(state);
-         return <div>{c}</div>;
-       };`,
+           const ObjectPatternReadTwo = () => {
+             const {c} = useSnapshot(state);
+             return <div>{c}</div>;
+           };`,
     `
-     const state = proxy({ count: 1 })
-     const useDoubled = () => {
-       const snap = useSnapshot(state)
-       return snap.count * 2
-     }
-     const Component = ()=> {
-       const doubled = useDoubled()
-       return <>{doubled}</>
-     }
-      `,
+         const state = proxy({ count: 1 })
+         const useDoubled = () => {
+           const snap = useSnapshot(state)
+           return snap.count * 2
+         }
+         const Component = ()=> {
+           const doubled = useDoubled()
+           return <>{doubled}</>
+         }
+          `,
     `
-    const Component = ()=>{
-      const { index } = useSnapshot(idxStore);
-    React.useEffect(() => {
-     const getUsers = async (id) => {
-       setUsers()
-     };
-     getUsers(index);
-  }, [index])
-  return <></>
+        const Component = ()=>{
+          const { index } = useSnapshot(idxStore);
+        React.useEffect(() => {
+         const getUsers = async (id) => {
+           setUsers()
+         };
+         getUsers(index);
+      }, [index])
+      return <></>
+        }
+    `,
+    `
+    	const state = proxy({count:1});
+    	const useDoubled = () => {
+    		const snap = useSnapshot(state)
+    		const doubled = snap.count*2;
+    		return doubled
+    	}
+    	`,
+    `
+    	const state = proxy({count:1});
+    	const useDoubled = () => {
+    		const snap = useSnapshot(state)
+    		const {doubled} = {doubled:snap.count*2};
+    		return doubled
+    	}
+    	`,
+    `
+    const state = proxy({ count: 0 });
+    const App=()=>{
+      const {count} = useSnapshot(state);
+      const doubled = count*2;
+      return (
+        <div>
+          {count} <button onClick={handleClick}>click</button>
+        </div>
+      );
     }
-`,
+    `,
     `
-	const state = proxy({count:1});
-	const useDoubled = () => {
-		const snap = useSnapshot(state)
-		const doubled = snap.count*2;
-		return doubled 
-	}
-	`,
+    const useDoubled = ({ state }) => {
+      const snap = useSnapshot(state)
+      const {doubled} = {doubled:snap.count*2};
+      return doubled
+    }
+    `,
     `
-	const state = proxy({count:1});
-	const useDoubled = () => {
-		const snap = useSnapshot(state)
-		const {doubled} = {doubled:snap.count*2};
-		return doubled 
-	}
-	`,
+    export const Workspace = () => {
+      const [loading, setLoading] = useState(false);
+
+      const snap = useSnapshot(eventsStore);
+
+      return (
+        <>
+          {(loading || !snap.initialized) && <Loader text="Loading..." />}
+          {snap.saving && <Loader text="Saving..." />}
+          {snap.packing && <Loader text="Packing..." />}
+          {snap.exporting && <Loader text="Exporting..." />}
+        </>
+      );
+    };
+    `,
     `
-const state = proxy({ count: 0 });
-const App=()=>{
-  const {count} = useSnapshot(state);
-  const doubled = count*2;
+    export function Workspace(){
+      const [loading, setLoading] = useState(false);
+
+      const snap = useSnapshot(eventsStore);
+
+      return (
+        <>
+          {(loading || !snap.initialized) && <Loader text="Loading..." />}
+          {snap.saving && <Loader text="Saving..." />}
+          {snap.packing && <Loader text="Packing..." />}
+          {snap.exporting && <Loader text="Exporting..." />}
+        </>
+      );
+    };
+    `,
+    `
+const Component = React.memo(({props})=>{
+  const [loading, setLoading] = useState(false);
+
+  const snap = useSnapshot(eventsStore);
+
   return (
-    <div>
-      {count} <button onClick={handleClick}>click</button>
-    </div>
+    <>
+      {(loading || !snap.initialized) && <Loader text="Loading..." />}
+      {snap.saving && <Loader text="Saving..." />}
+      {snap.packing && <Loader text="Packing..." />}
+      {snap.exporting && <Loader text="Exporting..." />}
+    </>
   );
-}
-`,
-    `
-const useDoubled = ({ state }) => {
-  const snap = useSnapshot(state)
-  const {doubled} = {doubled:snap.count*2};
-  return doubled 
-}
-`,
+})`,
+    `const Component = React.forwardRef((props,ref)=>{
+  const [loading, setLoading] = useState(false);
+
+  const snap = useSnapshot(eventsStore);
+
+  return (
+    <>
+      {(loading || !snap.initialized) && <Loader text="Loading..." />}
+      {snap.saving && <Loader text="Saving..." />}
+      {snap.packing && <Loader text="Packing..." />}
+      {snap.exporting && <Loader text="Exporting..." />}
+    </>
+  );
+})`,
   ],
   invalid: [
     {
@@ -373,7 +434,6 @@ const useDoubled = ({ state }) => {
       code: `
           function useExample2(s) {
             const {b: {c} } = useSnapshot(s.a1);
-
             useEffect(() => {
               if (c === 'a1c') {
                 state.a1.b.c = 'example';
