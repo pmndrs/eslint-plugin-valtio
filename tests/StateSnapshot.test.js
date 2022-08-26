@@ -83,6 +83,19 @@ ruleTester.run('state-snapshot-rule', rule, {
              );
            }
            `,
+    `const state = proxy({ count: 0 });
+           function App() {
+             const snap = useSnapshot(state);
+             const handleClick = useCallback(() => {
+               console.log(state.count);
+             }, []);
+             return (
+               <div>
+                 {snap.count} <button onClick={handleClick}>click</button>
+               </div>
+             );
+           }
+           `,
     `
            const DirectReadComponent = () => {
              const debounceSnap = useSnapshot(state);
@@ -234,6 +247,70 @@ const Component = React.memo(({props})=>{
      }
      `,
       errors: [PROXY_RENDER_PHASE_MESSAGE, PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ height: 0})
+          export const Component = () => {
+            return (
+              <div>
+                <button style={{ height: state.height }}>abc</button>
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ array: [1,2,3]})
+          export const Component = () => {
+            return (
+              <div>
+                <CustomComponent options={state.array}>abc</CustomComponent>
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ array: [1,2,3]})
+          export const Component = () => {
+            const snapshot = useSnapshot(state)
+            const filtered = snapshot.array.filter((item) => item !== 1)
+            return (
+              <CustomComponent data={filtered} />
+            )
+          }
+          `,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ array: [1,2,3]})
+          const state2 = proxy({ values: {1:"1", 2:"2", 3:"3"}})
+          
+          export const Component = () => {
+            const snapshot = useSnapshot(state)
+            const snapshot2 = useSnapshot(state2)
+            
+            const filtered = () => {
+              const temp = snapshot.array.filter((item) => item !== 1)
+              const collection = []
+              for (const item of temp) {
+                collection.push({value: snapshot2.values[item]})
+              }
+              return collection
+            }
+            
+            return (
+              <CustomComponent data={filtered} />
+            )
+          }
+          `,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE, SNAPSHOT_CALLBACK_MESSAGE],
     },
     {
       code: `
