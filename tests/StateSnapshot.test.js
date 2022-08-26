@@ -276,6 +276,21 @@ const Component = React.memo(({props})=>{
     },
     {
       code: `
+          const state = proxy({ show: false })
+          export const Component = () => {
+            return (
+              <div>
+              {
+                state.show && <CustomComponent>abc</CustomComponent>
+              }
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
           const state = proxy({ array: [1,2,3]})
           export const Component = () => {
             const snapshot = useSnapshot(state)
