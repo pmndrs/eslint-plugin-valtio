@@ -83,6 +83,19 @@ ruleTester.run('state-snapshot-rule', rule, {
              );
            }
            `,
+    `const state = proxy({ someObj: { count: 0 } });
+           function App() {
+             const snap = useSnapshot(state);
+             const handleClick = useCallback(() => {
+               console.log(snap.someObj.count);
+             }, [snap.someObj.count]);
+             return (
+               <div>
+                 {snap.someObj.count} <button onClick={handleClick}>click</button>
+               </div>
+             );
+           }
+           `,
     `const state = proxy({ count: 0 });
            function App() {
              const snap = useSnapshot(state);
