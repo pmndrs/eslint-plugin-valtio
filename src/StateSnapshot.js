@@ -369,6 +369,10 @@ function isInCallback(node) {
   }
 }
 
+// FIXME: change the logic since it's
+// a combination of both single and multi parent
+// checks, which breaks the recursion and causes
+// unintended behaviour
 function isInRender(node) {
   if (!node.parent || !node.parent.type) return false
 
