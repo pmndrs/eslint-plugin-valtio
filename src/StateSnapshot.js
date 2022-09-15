@@ -372,10 +372,9 @@ function isInCallback(node) {
 function isInRender(node) {
   if (!node.parent || !node.parent.type) return false
 
+  if (isInJSXContainer(node)) return true
   if (isInCallback(node)) return false
-  if (node.parent.type.toLowerCase().includes('jsx')) {
-    return true
-  } else {
+  else {
     return isInRender(node.parent)
   }
 }
