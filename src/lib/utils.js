@@ -296,7 +296,7 @@ function flattenMemberExpression(exprNode, path = []) {
   return (path.length && path.join('.')) || ''
 }
 
-export function isDepthSameAsRootComponent(node) {
+export function isFuncDepthSameAsRoot(node) {
   const varDef = getParentOfNodeType(node, 'VariableDeclaration')
   const parentNormalFunc = getParentOfNodeType(varDef, 'FunctionDeclaration')
   const parentArrFunc = getParentOfNodeType(varDef, 'ArrowFunctionExpression')
@@ -395,4 +395,24 @@ function getRootMemberExpression(node) {
   }
 
   return node
+}
+
+export function isHookName(name) {
+  return /^use[A-Z0-9]/.test(name)
+}
+
+export function isComponentName(name) {
+  return /^[A-Z]/.test(name)
+}
+
+export function isFunctionHookOrComponent(node) {
+  if (node.type === 'ArrowFunctionExpression') {
+    const varDef = getParentOfNodeType(node, 'VariableDeclarator')
+    const name = varDef?.id?.name || ''
+    return isHookName(name) || isComponentName(name)
+  }
+  if (node.type === 'FunctionExpression') {
+    const name = node.id?.name || ''
+    return isHookName(name) || isComponentName(name)
+  }
 }

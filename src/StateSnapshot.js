@@ -1,7 +1,8 @@
 import {
   callExpressions,
   functionTypes,
-  isDepthSameAsRootComponent,
+  isFuncDepthSameAsRoot,
+  isFunctionHookOrComponent,
   isInCustomHookDef,
   isInReactHookDeps,
   isInReactHooks,
@@ -86,11 +87,13 @@ export default {
         }
 
         const kind = which(node.name, scope)
-        if (kind === 'state' && isInRender(node)) {
-          return context.report({
-            node,
-            message: PROXY_RENDER_PHASE_MESSAGE,
-          })
+        if (kind === 'state') {
+          if (isInRender(node)) {
+            return context.report({
+              node,
+              message: PROXY_RENDER_PHASE_MESSAGE,
+            })
+          }
         }
 
         if (kind === 'snapshot') {
@@ -112,7 +115,7 @@ export default {
               })
             }
             if (
-              isDepthSameAsRootComponent(node) ||
+              isFuncDepthSameAsRoot(node) ||
               isInJSXContainer(node) ||
               isInCustomHookDef(node)
             ) {
@@ -363,7 +366,9 @@ function isInCallback(node) {
     (['VariableDeclarator'].includes(node.parent.type) &&
       functionTypes.includes(node.type))
   ) {
-    return true
+    if (!isFunctionHookOrComponent(node)) {
+      return true
+    }
   } else {
     return isInCallback(node.parent)
   }

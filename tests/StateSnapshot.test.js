@@ -33,6 +33,14 @@ export const Component = () => {
 }
 `,
     `
+export function Test2(){
+  const snap = useSnapshot(state)
+  if(!snap) return null;
+  return(
+    <></>
+  )
+}`,
+    `
              const state = proxy({ count: 0 })
              state.count += 1
 `,
