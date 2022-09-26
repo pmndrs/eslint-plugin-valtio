@@ -286,11 +286,7 @@ const Component = React.memo(({props})=>{
        )
      }
      `,
-      errors: [
-        PROXY_RENDER_PHASE_MESSAGE,
-        PROXY_RENDER_PHASE_MESSAGE,
-        PROXY_RENDER_PHASE_MESSAGE,
-      ],
+      errors: [PROXY_RENDER_PHASE_MESSAGE, PROXY_RENDER_PHASE_MESSAGE],
     },
     {
       code: `

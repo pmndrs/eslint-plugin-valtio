@@ -1,6 +1,7 @@
 import {
   callExpressions,
   functionTypes,
+  getParentOfNodeType,
   isFuncDepthSameAsRoot,
   isFunctionHookOrComponent,
   isInCustomHookDef,
@@ -374,18 +375,21 @@ function isInCallback(node) {
   }
 }
 
-// FIXME: change the logic since it's
-// a combination of both single and multi parent
-// checks, which breaks the recursion and causes
-// unintended behaviour
+// TODO: add in additional JSX Attribute checks to check if
+// proxy is being used to update or read or write , reads should be avoided
+// and write and update should be allowed.
 function isInRender(node) {
   if (!node.parent || !node.parent.type) return false
+  let nearestCallbackNode =
+    getParentOfNodeType(node, 'ArrowFunctionExpression') ||
+    getParentOfNodeType(node, 'FunctionExpression')
 
-  if (isInJSXContainer(node)) return true
-  if (isInCallback(node)) return false
-  else {
-    return isInRender(node.parent)
+  if (!nearestCallbackNode) {
+    return isInJSXContainer(node)
   }
+
+  const isCallbackInJSX = isInJSXContainer(nearestCallbackNode)
+  return isInJSXContainer(node) && !isCallbackInJSX
 }
 
 function isLiteral(node) {
