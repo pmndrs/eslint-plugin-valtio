@@ -88,6 +88,7 @@ export default {
         }
 
         const kind = which(node.name, scope)
+
         if (kind === 'state') {
           if (isInRender(node)) {
             return context.report({
@@ -109,12 +110,26 @@ export default {
           // [x] if being used in a callback that isn't useEffect or useCallback
 
           if (isReadOnly(node)) {
+            // if in a callback that's not a hook def
+            // FIXME: repetetive check, can be optimized
+            if (
+              isInCallback(node) &&
+              !isInReactHooks(node) &&
+              !isInCustomHookDef(node)
+            ) {
+              return context.report({
+                node,
+                message: SNAPSHOT_CALLBACK_MESSAGE,
+              })
+            }
+
             if (isInReactHooks(node) && !isInReactHookDeps(node)) {
               return context.report({
                 node,
                 message: SNAPSHOT_CALLBACK_MESSAGE,
               })
             }
+
             if (
               isFuncDepthSameAsRoot(node) ||
               isInJSXContainer(node) ||
