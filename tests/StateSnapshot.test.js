@@ -14,9 +14,36 @@ const ruleTester = new RuleTester({
 ruleTester.run('state-snapshot-rule', rule, {
   valid: [
     `
+const state = proxy({ array: [1,2,3]})
+export const Component = () => {
+  const snapshot = useSnapshot(state)
+  const filtered = snapshot.array.filter((item) => item !== 1)
+  return (
+    <CustomComponent data={filtered} />
+  )
+}
+`,
+    `
+  export const Test = () => {
+  const snap = useSnapshot(state)
+  if(!snap) return null;
+  return(
+    <></>
+  )
+}
+`,
+    `
+export function Test2(){
+  const snap = useSnapshot(state)
+  if(!snap) return null;
+  return(
+    <></>
+  )
+}`,
+    `
              const state = proxy({ count: 0 })
              state.count += 1
-             `,
+`,
     `
              const state = proxy({ count: 0})
              function Counter() {
@@ -83,6 +110,32 @@ ruleTester.run('state-snapshot-rule', rule, {
              );
            }
            `,
+    `const state = proxy({ someObj: { count: 0 } });
+           function App() {
+             const snap = useSnapshot(state);
+             const handleClick = useCallback(() => {
+               console.log(snap.someObj.count);
+             }, [snap.someObj.count]);
+             return (
+               <div>
+                 {snap.someObj.count} <button onClick={handleClick}>click</button>
+               </div>
+             );
+           }
+           `,
+    `const state = proxy({ count: 0 });
+           function App() {
+             const snap = useSnapshot(state);
+             const handleClick = useCallback(() => {
+               console.log(state.count);
+             }, []);
+             return (
+               <div>
+                 {snap.count} <button onClick={handleClick}>click</button>
+               </div>
+             );
+           }
+           `,
     `
            const DirectReadComponent = () => {
              const debounceSnap = useSnapshot(state);
@@ -123,21 +176,21 @@ ruleTester.run('state-snapshot-rule', rule, {
         }
     `,
     `
-    	const state = proxy({count:1});
-    	const useDoubled = () => {
-    		const snap = useSnapshot(state)
-    		const doubled = snap.count*2;
-    		return doubled
-    	}
-    	`,
+      const state = proxy({count:1});
+      const useDoubled = () => {
+        const snap = useSnapshot(state)
+        const doubled = snap.count*2;
+        return doubled
+      }
+      `,
     `
-    	const state = proxy({count:1});
-    	const useDoubled = () => {
-    		const snap = useSnapshot(state)
-    		const {doubled} = {doubled:snap.count*2};
-    		return doubled
-    	}
-    	`,
+      const state = proxy({count:1});
+      const useDoubled = () => {
+        const snap = useSnapshot(state)
+        const {doubled} = {doubled:snap.count*2};
+        return doubled
+      }
+      `,
     `
     const state = proxy({ count: 0 });
     const App=()=>{
@@ -234,6 +287,72 @@ const Component = React.memo(({props})=>{
      }
      `,
       errors: [PROXY_RENDER_PHASE_MESSAGE, PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ height: 0})
+          export const Component = () => {
+            return (
+              <div>
+                <button style={{ height: state.height }}>abc</button>
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ array: [1,2,3]})
+          export const Component = () => {
+            return (
+              <div>
+                <CustomComponent options={state.array}>abc</CustomComponent>
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ show: false })
+          export const Component = () => {
+            return (
+              <div>
+              {
+                state.show && <CustomComponent>abc</CustomComponent>
+              }
+              </div>
+            )
+          }
+          `,
+      errors: [PROXY_RENDER_PHASE_MESSAGE],
+    },
+    {
+      code: `
+          const state = proxy({ array: [1,2,3]})
+          const state2 = proxy({ values: {1:"1", 2:"2", 3:"3"}})
+          
+          export const Component = () => {
+            const snapshot = useSnapshot(state)
+            const snapshot2 = useSnapshot(state2)
+            
+            const filtered = () => {
+              const temp = snapshot.array.filter((item) => item !== 1)
+              const collection = []
+              for (const item of temp) {
+                collection.push({value: snapshot2.values[item]})
+              }
+              return collection
+            }
+            
+            return (
+              <CustomComponent data={filtered} />
+            )
+          }
+          `,
+      errors: [SNAPSHOT_CALLBACK_MESSAGE, SNAPSHOT_CALLBACK_MESSAGE],
     },
     {
       code: `

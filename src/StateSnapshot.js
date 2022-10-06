@@ -1,7 +1,9 @@
 import {
   callExpressions,
   functionTypes,
-  isDepthSameAsRootComponent,
+  getParentOfNodeType,
+  isFuncDepthSameAsRoot,
+  isFunctionHookOrComponent,
   isInCustomHookDef,
   isInReactHookDeps,
   isInReactHooks,
@@ -86,11 +88,14 @@ export default {
         }
 
         const kind = which(node.name, scope)
-        if (kind === 'state' && isInRender(node)) {
-          return context.report({
-            node,
-            message: PROXY_RENDER_PHASE_MESSAGE,
-          })
+
+        if (kind === 'state') {
+          if (isInRender(node)) {
+            return context.report({
+              node,
+              message: PROXY_RENDER_PHASE_MESSAGE,
+            })
+          }
         }
 
         if (kind === 'snapshot') {
@@ -105,14 +110,28 @@ export default {
           // [x] if being used in a callback that isn't useEffect or useCallback
 
           if (isReadOnly(node)) {
+            // if in a callback that's not a hook def
+            // FIXME: repetetive check, can be optimized
+            if (
+              isInCallback(node) &&
+              !isInReactHooks(node) &&
+              !isInCustomHookDef(node)
+            ) {
+              return context.report({
+                node,
+                message: SNAPSHOT_CALLBACK_MESSAGE,
+              })
+            }
+
             if (isInReactHooks(node) && !isInReactHookDeps(node)) {
               return context.report({
                 node,
                 message: SNAPSHOT_CALLBACK_MESSAGE,
               })
             }
+
             if (
-              isDepthSameAsRootComponent(node) ||
+              isFuncDepthSameAsRoot(node) ||
               isInJSXContainer(node) ||
               isInCustomHookDef(node)
             ) {
@@ -363,21 +382,29 @@ function isInCallback(node) {
     (['VariableDeclarator'].includes(node.parent.type) &&
       functionTypes.includes(node.type))
   ) {
-    return true
+    if (!isFunctionHookOrComponent(node)) {
+      return true
+    }
   } else {
     return isInCallback(node.parent)
   }
 }
 
+// TODO: add in additional JSX Attribute checks to check if
+// proxy is being used to update or read or write , reads should be avoided
+// and write and update should be allowed.
 function isInRender(node) {
   if (!node.parent || !node.parent.type) return false
+  let nearestCallbackNode =
+    getParentOfNodeType(node, 'ArrowFunctionExpression') ||
+    getParentOfNodeType(node, 'FunctionExpression')
 
-  if (isInCallback(node)) return false
-  if (node.parent.type.toLowerCase().includes('jsx')) {
-    return true
-  } else {
-    return isInRender(node.parent)
+  if (!nearestCallbackNode) {
+    return isInJSXContainer(node)
   }
+
+  const isCallbackInJSX = isInJSXContainer(nearestCallbackNode)
+  return isInJSXContainer(node) && !isCallbackInJSX
 }
 
 function isLiteral(node) {

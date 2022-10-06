@@ -211,9 +211,10 @@ export function isInReactHookDeps(node) {
   }
   const allDepExpressions = getHookDeps(hookNode)
 
-  let depPath
+  let depPath = ''
   if (node.parent.type === 'MemberExpression') {
-    depPath = flattenMemberExpression(node.parent)
+    let rootMemberExpressionForNode = getRootMemberExpression(node)
+    depPath = flattenMemberExpression(rootMemberExpressionForNode)
   } else {
     // TODO: need to make this an absolute check
     // based on future reports as it currently
@@ -273,29 +274,29 @@ export function getHookDeps(hookNode) {
 
 /**
  * @description get the object path as a string for a given member expression
- * @param {*} expr - Member Expression
+ * @param {*} exprNode - Member Expression
  * @param {*} key - the key across recursive functions
  * @returns {string} either a object path as string
  * or an empty string if nothing is found
  */
-function flattenMemberExpression(expr, key = '') {
-  if (expr.type !== 'MemberExpression') {
-    return ''
+function flattenMemberExpression(exprNode, path = []) {
+  if (exprNode.type !== 'MemberExpression') {
+    return (path.length && path.join('.')) || ''
   }
-  if (expr.object.type === 'MemberExpression') {
-    return flattenMemberExpression(expr.object, '') + expr.property.name
+
+  if (exprNode.property.type === 'Identifier') {
+    path.unshift(exprNode.property.name)
   }
-  if (expr.object.type == 'Identifier') {
-    let path = expr.object.name + '.' + expr.property.name
-    if (key) {
-      path += '.' + key
-    }
-    return path
+
+  if (exprNode.object.type === 'Identifier') {
+    path.unshift(exprNode.object.name)
+  } else if (exprNode.object.type === 'MemberExpression') {
+    flattenMemberExpression(exprNode.object, path)
   }
-  return ''
+  return (path.length && path.join('.')) || ''
 }
 
-export function isDepthSameAsRootComponent(node) {
+export function isFuncDepthSameAsRoot(node) {
   const varDef = getParentOfNodeType(node, 'VariableDeclaration')
   const parentNormalFunc = getParentOfNodeType(varDef, 'FunctionDeclaration')
   const parentArrFunc = getParentOfNodeType(varDef, 'ArrowFunctionExpression')
@@ -385,5 +386,33 @@ function isInRefOrMemo(node) {
     ) {
       return true
     }
+  }
+}
+
+function getRootMemberExpression(node) {
+  if (node.parent.type === 'MemberExpression') {
+    return getRootMemberExpression(node.parent)
+  }
+
+  return node
+}
+
+export function isHookName(name) {
+  return /^use[A-Z0-9]/.test(name)
+}
+
+export function isComponentName(name) {
+  return /^[A-Z]/.test(name)
+}
+
+export function isFunctionHookOrComponent(node) {
+  if (node.type === 'ArrowFunctionExpression') {
+    const varDef = getParentOfNodeType(node, 'VariableDeclarator')
+    const name = varDef?.id?.name || ''
+    return isHookName(name) || isComponentName(name)
+  }
+  if (node.type === 'FunctionExpression') {
+    const name = node.id?.name || ''
+    return isHookName(name) || isComponentName(name)
   }
 }
