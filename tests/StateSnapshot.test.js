@@ -110,6 +110,19 @@ export function Test2(){
              );
            }
            `,
+    `const state = proxyWithHistory({ count: 0 });
+           function App() {
+            
+            const obj = new MyObject();
+            obj.scale = 0;
+
+            const [fakeObj, setFakeObj] = useState<MyObject>(obj)
+
+            const {count} = useSnapshot(state.value)
+             
+            return <div></div>;
+           }
+           `,
     `const state = proxy({ someObj: { count: 0 } });
            function App() {
              const snap = useSnapshot(state);
