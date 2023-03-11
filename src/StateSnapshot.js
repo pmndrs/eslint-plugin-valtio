@@ -321,7 +321,7 @@ function isSameMemmberExpression(first, second) {
       first.object.type === 'Identifier' &&
       second.object.type === 'Identifier'
     ) {
-      return first.object.type === second.object.type
+      return first.object.name === second.object.name
     }
   } else {
     return false
