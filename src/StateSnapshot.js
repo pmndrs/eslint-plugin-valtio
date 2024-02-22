@@ -114,6 +114,7 @@ export default {
             // FIXME: repetetive check, can be optimized
             if (
               isInCallback(node) &&
+              !isInJSXContainer(node) &&
               !isInReactHooks(node) &&
               !isInCustomHookDef(node)
             ) {
