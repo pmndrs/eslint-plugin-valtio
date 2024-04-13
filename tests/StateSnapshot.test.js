@@ -298,6 +298,20 @@ ruleTester.run('state-snapshot-rule', rule, {
       </>
     );
   })`,
+    `
+  function useExample2(s) {
+    const {b: {c} } = useSnapshot(s.a1);
+    const val = useMemo(()=>{
+      return s.a1.b.c
+    },[s.a1.b.c])
+  }`,
+    `
+  const foo = proxy({ foo: 123 });
+  function useExample2(s) {
+    const val = useMemo(()=>{
+      return foo.foo
+    },[foo.foo])
+  }`,
   ],
   invalid: [
     {
