@@ -167,17 +167,16 @@ export function isInReactHooks(node, returnHook = false) {
   return hookDef ? true : false
 }
 
-function isReactPrimitive(node) {
-  if (
-    node.type === 'Identifier' &&
-    (node.name === 'useEffect' || node.name === 'useCallback')
-  ) {
-    return true
+function isInSupportedReactPrimitives(node) {
+  const supportedPrimitives = ['useEffect', 'useCallback', 'useMemo']
+
+  if (node.type === 'Identifier') {
+    return supportedPrimitives.includes(node.name)
   }
 
   if (node.type === 'MemberExpression') {
     const flatExpr = flattenMemberExpression(node)
-    return flatExpr.endsWith('useEffect') || flatExpr.endsWith('useCallback')
+    return supportedPrimitives.some((d) => flatExpr.endsWith(d))
   }
 
   return false
@@ -191,7 +190,7 @@ export function getNearestHook(node) {
     return false
   }
 
-  if (!isReactPrimitive(parentCaller.callee)) {
+  if (!isInSupportedReactPrimitives(parentCaller.callee)) {
     return getNearestHook(parentCaller)
   }
 
