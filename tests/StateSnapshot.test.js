@@ -306,12 +306,27 @@ ruleTester.run('state-snapshot-rule', rule, {
     },[s.a1.b.c])
   }`,
     `
+  function useExample3(s) {
+    const {b: {c} } = useSnapshot(s.a1);
+    const val = useMemo(()=>{
+      return c
+    },[c])
+  }`,
+    `
   const foo = proxy({ foo: 123 });
   function useExample2(s) {
     const val = useMemo(()=>{
       return foo.foo
     },[foo.foo])
   }`,
+    `
+  const foo = proxy({ foo: 123 });
+  function useExample2(s) {
+    const val = useMemo(()=>{
+      return foo.foo
+    },[foo])
+  }
+  `,
   ],
   invalid: [
     {
