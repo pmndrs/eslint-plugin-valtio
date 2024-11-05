@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install Packages
-        run: npm install
+        run: yarn install --check-files
       - name: Install ESLint ${{ matrix.eslint }}
         run: yarn add --no-lockfile eslint@${{ matrix.eslint }}
       - name: Test
