@@ -29,10 +29,14 @@ export default {
   },
   create(context) {
     // FIX: remove when dropping support for < v9
-    const sourceCode = context.sourceCode || context.getSourceCode()
+    var sourceCode = context.sourceCode || context.getSourceCode()
+    var getScope =
+      'getScope' in context
+        ? context.getScope.bind(context)
+        : sourceCode.getScope.bind(sourceCode)
     return {
       Identifier(node) {
-        const scope = sourceCode.getScope(node)
+        const scope = getScope(node)
 
         if (isInComputed(node) && isInProperty(node)) {
           if (

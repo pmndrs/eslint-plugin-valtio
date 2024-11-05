@@ -15,7 +15,7 @@ const plugin = {
 Object.assign(plugin, {
   configs: {
     recommended: {
-      plugins: ['valtio'],
+      plugins: { valtio: plugin },
       rules: {
         'valtio/state-snapshot-rule': 'warn',
         'valtio/avoid-this-in-proxy': 'warn',
