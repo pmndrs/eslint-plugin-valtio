@@ -51,6 +51,6 @@ jobs:
       - name: Install Packages
         run: npm install
       - name: Install ESLint ${{ matrix.eslint }}
-        run: yarn add --no-save --force eslint@${{ matrix.eslint }}
+        run: yarn add --no-lockfile eslint@${{ matrix.eslint }}
       - name: Test
         run: yarn test
