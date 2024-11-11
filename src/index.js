@@ -1,17 +1,30 @@
 import StateSnapshot from './StateSnapshot'
 import AvoidThisInProxy from './AvoidThisInProxy'
 
-export const rules = {
-  'state-snapshot-rule': StateSnapshot,
-  'avoid-this-in-proxy': AvoidThisInProxy,
+const plugin = {
+  meta: {
+    name: 'eslint-plugin-valtio',
+  },
+  rules: {
+    'state-snapshot-rule': StateSnapshot,
+    'avoid-this-in-proxy': AvoidThisInProxy,
+  },
+  configs: {},
 }
 
-export const configs = {
-  recommended: {
-    plugins: ['valtio'],
-    rules: {
-      'valtio/state-snapshot-rule': 'warn',
-      'valtio/avoid-this-in-proxy': 'warn',
+Object.assign(plugin, {
+  configs: {
+    recommended: {
+      plugins: { valtio: plugin },
+      rules: {
+        'valtio/state-snapshot-rule': 'warn',
+        'valtio/avoid-this-in-proxy': 'warn',
+      },
     },
   },
-}
+})
+
+module.exports = plugin
+
+export const configs = plugin.configs
+export const rules = plugin.rules
