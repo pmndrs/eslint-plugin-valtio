@@ -16,7 +16,7 @@ yarn add -D eslint-plugin-valtio
 
 ## Usage
 
-## eslint v9 / flat config
+### eslint v9 / flat config
 
 ```js
 const valtio = require('eslint-plugin-valtio')
