@@ -32,7 +32,7 @@ module.exports = [
 ]
 ```
 
-## eslint v8 and below
+### eslint v8 and below
 
 Add `valtio` to the `extends` section of your `.eslintrc` configuration file.
 
