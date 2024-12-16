@@ -42,6 +42,8 @@ Add `valtio` to the `extends` section of your `.eslintrc` configuration file.
 }
 ```
 
+## Rules
+
 Alternatively, you can enable rules in the plugin, selectively.
 
 ```json
@@ -56,6 +58,9 @@ Alternatively, you can enable rules in the plugin, selectively.
 ## Why
 
 This plugin helps you catch common mistakes that can occur in [valtio](https://github.com/pmndrs/valtio). Here are some cases that this plugin catches.
+
+
+## Rules Breakdown
 
 ### Snapshots in callbacks are not recommended
 
