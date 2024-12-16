@@ -15,6 +15,13 @@ const plugin = {
 Object.assign(plugin, {
   configs: {
     recommended: {
+      plugins: ['valtio'],
+      rules: {
+        'valtio/state-snapshot-rule': 'warn',
+        'valtio/avoid-this-in-proxy': 'warn',
+      },
+    },
+    'flat/recommended': {
       plugins: { valtio: plugin },
       rules: {
         'valtio/state-snapshot-rule': 'warn',
@@ -25,6 +32,5 @@ Object.assign(plugin, {
 })
 
 module.exports = plugin
-
 export const configs = plugin.configs
 export const rules = plugin.rules
