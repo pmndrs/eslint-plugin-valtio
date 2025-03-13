@@ -285,32 +285,50 @@ function isInAssignmentExpression(node) {
   )
 }
 
+const whichCache = new WeakMap()
+
 function which(name, scope) {
+  if (!scope) return null
+
+  let cachedForScope = whichCache.get(scope)
+  if (!cachedForScope) {
+    cachedForScope = new Map()
+    whichCache.set(scope, cachedForScope)
+  }
+  if (cachedForScope.has(name)) return cachedForScope.get(name)
+
   let kind = null
+  for (const variable of scope.variables) {
+    if (variable.name !== name) continue
 
-  if (!scope) return kind
-
-  scope.variables.forEach((variable) => {
     const def = variable.defs[0]
-    if (!def || variable.name !== name) return
+    if (!def) continue
 
     const init = def.node.init
-    if (!init) return
-    if (init.type === 'Identifier') {
-      return (kind = which(init.name, scope))
-    } else if (init.type === 'CallExpression' && init.callee.name === 'proxy') {
-      return (kind = 'state')
-    } else if (
-      init.type === 'CallExpression' &&
-      init.callee.name === 'useSnapshot'
-    ) {
-      return (kind = 'snapshot')
-    }
-  })
-  if (!kind && scope.upper) return (kind = which(name, scope.upper))
+    if (!init) continue
 
+    if (init.type === 'Identifier') {
+      kind = which(init.name, scope)
+    } else if (init.type === 'CallExpression') {
+      const { name: calleeName } = init.callee
+      if (calleeName === 'proxy') {
+        kind = 'state'
+      } else if (calleeName === 'useSnapshot') {
+        kind = 'snapshot'
+      }
+    }
+
+    if (kind) break
+  }
+
+  if (!kind && scope.upper) {
+    kind = which(name, scope.upper)
+  }
+
+  cachedForScope.set(name, kind)
   return kind
 }
+
 function isSameMemmberExpression(first, second) {
   if (!first || !second) return false
   if (
