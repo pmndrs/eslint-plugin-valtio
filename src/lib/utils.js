@@ -350,10 +350,19 @@ export function isInCustomHookDef(node) {
     nearestFuncDef,
     'VariableDeclarator'
   )
+
+  if (!varDeclaratorOfFunc) {
+    return false
+  }
+
   const varDefOfFunc = getParentOfNodeType(
     varDeclaratorOfFunc,
     'VariableDeclaration'
   )
+
+  if (!varDefOfFunc) {
+    return false
+  }
 
   const varDefOnRoot = varDefOfFunc.parent?.type === 'Program' || false
 
