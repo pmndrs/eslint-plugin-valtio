@@ -67,6 +67,7 @@ export function nearestCalleeName(node) {
   return nearestCalleeName(node.parent)
 }
 
+const parentOfNodeTypeCache = new WeakMap()
 /**
  * @param {any} node ASTNode to start from
  * @param {string} nodeType the type of ASTNode to look for
@@ -88,12 +89,25 @@ export function getParentOfNodeType(node, nodeType) {
     return null
   }
 
-  if (node.parent && node.parent.type !== nodeType) {
-    return getParentOfNodeType(node.parent, nodeType)
-  } else if (node.parent && node.parent.type === nodeType) {
-    return node.parent
+  let cacheForNode = parentOfNodeTypeCache.get(node)
+  if (cacheForNode && cacheForNode[nodeType] !== undefined) {
+    return cacheForNode[nodeType]
   }
-  return null
+
+  let result = null
+  if (node.parent.type !== nodeType) {
+    result = getParentOfNodeType(node.parent, nodeType)
+  } else if (node.parent.type === nodeType) {
+    result = node.parent
+  }
+
+  if (!cacheForNode) {
+    cacheForNode = {}
+    parentOfNodeTypeCache.set(node, cacheForNode)
+  }
+  cacheForNode[nodeType] = result
+
+  return result
 }
 
 /**
