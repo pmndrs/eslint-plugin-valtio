@@ -353,6 +353,7 @@ function isSameMemmberExpression(first, second) {
   }
   return false
 }
+
 function isUsedInUseProxy(node, scope) {
   let isUsed = false
   if (!scope) return isUsed
